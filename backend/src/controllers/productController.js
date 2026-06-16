@@ -1,0 +1,114 @@
+const Product = require('../models/Product');
+
+// @desc    Get all products
+// @route   GET /api/products
+// @access  Private
+exports.getProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ storeId: req.user.storeId });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get single product
+// @route   GET /api/products/:id
+// @access  Private
+exports.getProduct = async (req, res) => {
+  try {
+    const product = await Product.findOne({ _id: req.params.id, storeId: req.user.storeId });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Create product
+// @route   POST /api/products
+// @access  Private
+exports.createProduct = async (req, res) => {
+  try {
+    const product = new Product({
+      ...req.body,
+      storeId: req.user.storeId,
+    });
+    const createdProduct = await product.save();
+    res.status(201).json(createdProduct);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update product
+// @route   PUT /api/products/:id
+// @access  Private
+exports.updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findOneAndUpdate(
+      { _id: req.params.id, storeId: req.user.storeId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete product
+// @route   DELETE /api/products/:id
+// @access  Private
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findOneAndDelete({ _id: req.params.id, storeId: req.user.storeId });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json({ message: 'Product removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get expiring products
+// @route   GET /api/products/expiring
+// @access  Private
+exports.getExpiringProducts = async (req, res) => {
+  try {
+    const today = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + 90); // 90 days from now
+
+    const products = await Product.find({
+      storeId: req.user.storeId,
+      expiryDate: { $lte: futureDate },
+    }).sort('expiryDate');
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get low stock products
+// @route   GET /api/products/low-stock
+// @access  Private
+exports.getLowStockProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      storeId: req.user.storeId,
+      $expr: { $lte: ['$quantity', '$reorderLevel'] },
+    }).sort('quantity');
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
