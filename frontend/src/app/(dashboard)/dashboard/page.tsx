@@ -228,7 +228,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        <Card className="border-l-4 border-l-blue-500">
+        <Card className="border-l-4 border-l-blue-500 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors" onClick={() => router.push('/products')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
             <Package className="w-4 h-4 text-blue-600" />
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-orange-500">
+        <Card className="border-l-4 border-l-orange-500 cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors" onClick={() => router.push('/stock')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock</CardTitle>
             <TrendingUp className="w-4 h-4 text-orange-600" />
@@ -250,7 +250,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-yellow-500">
+        <Card className="border-l-4 border-l-yellow-500 cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition-colors" onClick={() => router.push('/expiry')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Expiring Soon</CardTitle>
             <AlertTriangle className="w-4 h-4 text-yellow-600" />
@@ -261,7 +261,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-red-500">
+        <Card className="border-l-4 border-l-red-500 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors" onClick={() => router.push('/expiry')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Expired</CardTitle>
             <AlertCircle className="w-4 h-4 text-red-600" />

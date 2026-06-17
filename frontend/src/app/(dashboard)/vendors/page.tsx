@@ -126,9 +126,16 @@ export default function VendorsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Phone Number *</label>
                   <Input 
+                    type="tel"
                     required 
                     value={formData.phone} 
-                    onChange={e => setFormData({...formData, phone: e.target.value})} 
+                    onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 10) {
+                        setFormData({...formData, phone: val});
+                      }
+                    }}
+                    maxLength={10}
                   />
                 </div>
                 <div className="space-y-2">
@@ -142,8 +149,17 @@ export default function VendorsPage() {
                 <div className="space-y-2 col-span-2">
                   <label className="text-sm font-medium">GST Number</label>
                   <Input 
+                    placeholder="e.g., 29ABCDE1234F1Z5"
                     value={formData.gstNumber} 
-                    onChange={e => setFormData({...formData, gstNumber: e.target.value})} 
+                    onChange={e => {
+                      let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                      if (val.length <= 15) {
+                        setFormData({...formData, gstNumber: val});
+                      }
+                    }}
+                    maxLength={15}
+                    pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                    title="Please enter a valid 15-character GSTIN (e.g., 29ABCDE1234F1Z5)"
                   />
                 </div>
                 <div className="space-y-2 col-span-2">

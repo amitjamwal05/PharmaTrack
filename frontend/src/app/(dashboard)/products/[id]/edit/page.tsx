@@ -17,11 +17,13 @@ export default function EditProductPage() {
   
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vendors, setVendors] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     productName: '',
     genericName: '',
     category: 'Tablet',
     manufacturer: '',
+    vendorId: '',
     batchNumber: '',
     purchasePrice: '',
     sellingPrice: '',
@@ -30,7 +32,12 @@ export default function EditProductPage() {
     reorderLevel: '10',
     expiryDate: '',
     rackNumber: '',
+    gstRate: '0',
   });
+
+  useEffect(() => {
+    api.get('/vendors').then(res => setVendors(res.data)).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -48,6 +55,7 @@ export default function EditProductPage() {
           genericName: product.genericName || '',
           category: product.category || 'Tablet',
           manufacturer: product.manufacturer || '',
+          vendorId: product.vendorId || '',
           batchNumber: product.batchNumber || '',
           purchasePrice: product.purchasePrice || '',
           sellingPrice: product.sellingPrice || '',
@@ -56,6 +64,7 @@ export default function EditProductPage() {
           reorderLevel: product.reorderLevel || '10',
           expiryDate: formattedDate,
           rackNumber: product.rackNumber || '',
+          gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '0',
         });
       } catch (error: any) {
         toast.error(error.response?.data?.message || 'Failed to fetch product');
@@ -80,10 +89,12 @@ export default function EditProductPage() {
     try {
       await api.put(`/products/${id}`, {
         ...formData,
+        vendorId: formData.vendorId ? formData.vendorId : undefined,
         purchasePrice: Number(formData.purchasePrice),
         sellingPrice: Number(formData.sellingPrice),
         quantity: Number(formData.quantity),
         reorderLevel: Number(formData.reorderLevel),
+        gstRate: Number(formData.gstRate),
       });
       toast.success('Product updated successfully!');
       router.push(`/products/${id}`); // Redirect back to product details page
@@ -151,6 +162,18 @@ export default function EditProductPage() {
                 <Input name="manufacturer" value={formData.manufacturer} onChange={handleChange} />
               </div>
               <div className="space-y-2">
+                <label className="text-sm font-medium">Vendor / Supplier</label>
+                <select 
+                  name="vendorId" 
+                  value={formData.vendorId} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                >
+                  <option value="">-- No Vendor Selected --</option>
+                  {vendors.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Batch Number *</label>
                 <Input name="batchNumber" required value={formData.batchNumber} onChange={handleChange} />
               </div>
@@ -165,6 +188,21 @@ export default function EditProductPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Selling Price (₹) *</label>
                 <Input type="number" step="0.01" name="sellingPrice" required value={formData.sellingPrice} onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">GST Rate (%)</label>
+                <select 
+                  name="gstRate" 
+                  value={formData.gstRate} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                >
+                  <option value="0">0%</option>
+                  <option value="5">5%</option>
+                  <option value="12">12%</option>
+                  <option value="18">18%</option>
+                  <option value="28">28%</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Initial Quantity</label>

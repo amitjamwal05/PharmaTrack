@@ -27,6 +27,7 @@ export default function AddProductPage() {
     reorderLevel: '10',
     expiryDate: '',
     rackNumber: '',
+    gstRate: '0',
   });
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function AddProductPage() {
         sellingPrice: Number(formData.sellingPrice),
         quantity: Number(formData.quantity),
         reorderLevel: Number(formData.reorderLevel),
+        gstRate: Number(formData.gstRate),
       });
       router.push('/products');
     } catch (error: any) {
@@ -136,6 +138,21 @@ export default function AddProductPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Selling Price (₹) *</label>
                 <Input type="number" step="0.01" name="sellingPrice" required value={formData.sellingPrice} onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">GST Rate (%)</label>
+                <select 
+                  name="gstRate" 
+                  value={formData.gstRate} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                >
+                  <option value="0">0%</option>
+                  <option value="5">5%</option>
+                  <option value="12">12%</option>
+                  <option value="18">18%</option>
+                  <option value="28">28%</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Initial Quantity</label>
