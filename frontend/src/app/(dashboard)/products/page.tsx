@@ -72,8 +72,11 @@ export default function ProductsPage() {
 
   const handleAddProductClick = (e: React.MouseEvent) => {
     if (user?.role !== 'superadmin' && (!user?.subscriptionPlan || user?.subscriptionPlan === 'free' || user?.subscriptionPlan === 'pending')) {
-      e.preventDefault();
-      setShowPaywall(true);
+      // Allow exactly 1 free product
+      if (products.length >= 1) {
+        e.preventDefault();
+        setShowPaywall(true);
+      }
     }
   };
 

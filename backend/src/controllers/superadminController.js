@@ -109,6 +109,38 @@ exports.resetAdminPassword = async (req, res) => {
   }
 };
 
+// @desc    Update store details
+// @route   PUT /api/superadmin/stores/:id
+// @access  Private/SuperAdmin
+exports.updateStoreDetails = async (req, res) => {
+  try {
+    const { name, adminName, phone } = req.body;
+    
+    // Update store (name and phone)
+    const store = await Store.findByIdAndUpdate(
+      req.params.id,
+      { name, phone },
+      { new: true }
+    );
+    
+    if (!store) {
+      return res.status(404).json({ message: 'Store not found' });
+    }
+
+    // Update admin user (name)
+    if (adminName) {
+      await User.findOneAndUpdate(
+        { storeId: req.params.id, role: 'admin' },
+        { name: adminName }
+      );
+    }
+
+    res.status(200).json({ message: 'Store details updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Get dashboard stats
 // @route   GET /api/superadmin/dashboard-stats
 // @access  Private/SuperAdmin

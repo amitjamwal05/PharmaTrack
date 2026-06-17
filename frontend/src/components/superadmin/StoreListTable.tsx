@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Key, Trash2 } from 'lucide-react';
+import { Key, Trash2, Edit3 } from 'lucide-react';
 
 interface StoreListTableProps {
   stores: any[];
@@ -9,9 +9,10 @@ interface StoreListTableProps {
   onUpdatePlan: (id: string, plan: string) => void;
   onOpenResetModal: (id: string, name: string) => void;
   onDeleteStore: (id: string, name: string) => void;
+  onOpenEditModal: (store: any) => void;
 }
 
-export function StoreListTable({ stores, loading, onUpdatePlan, onOpenResetModal, onDeleteStore }: StoreListTableProps) {
+export function StoreListTable({ stores, loading, onUpdatePlan, onOpenResetModal, onDeleteStore, onOpenEditModal }: StoreListTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -67,6 +68,14 @@ export function StoreListTable({ stores, loading, onUpdatePlan, onOpenResetModal
                       </select>
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => onOpenEditModal(store)}
+                        title="Edit Store Details"
+                      >
+                        <Edit3 className="w-4 h-4 text-blue-500 hover:text-blue-700" />
+                      </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 

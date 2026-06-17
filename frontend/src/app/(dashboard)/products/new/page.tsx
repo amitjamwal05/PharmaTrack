@@ -50,9 +50,13 @@ export default function AddProductPage() {
         reorderLevel: Number(formData.reorderLevel),
       });
       router.push('/products');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding product:', error);
-      alert('Failed to add product.');
+      if (error.response?.data?.message === 'PAYWALL_LIMIT_REACHED') {
+        alert('Free plan limit reached! You can only add 1 product for free. Please upgrade your plan.');
+      } else {
+        alert('Failed to add product.');
+      }
       setIsSubmitting(false);
     }
   };

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { StoreListTable } from '@/components/superadmin/StoreListTable';
 import { GlobalAnnouncements } from '@/components/superadmin/GlobalAnnouncements';
 import { ResetAdminPasswordModal } from '@/components/superadmin/ResetAdminPasswordModal';
+import { EditStoreDetailsModal } from '@/components/superadmin/EditStoreDetailsModal';
 
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -27,6 +28,11 @@ export default function SuperAdminPage() {
   const [resetModal, setResetModal] = useState({ isOpen: false, storeId: '', adminName: '' });
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const [editModal, setEditModal] = useState({ 
+    isOpen: false, 
+    storeDetails: { storeId: '', storeName: '', adminName: '', phone: '' } 
+  });
 
   useEffect(() => {
     if (user?.role === 'superadmin') {
@@ -80,6 +86,29 @@ export default function SuperAdminPage() {
     setShowPassword(false);
   };
 
+  const openEditModal = (store: any) => {
+    setEditModal({
+      isOpen: true,
+      storeDetails: {
+        storeId: store._id,
+        storeName: store.name || '',
+        adminName: store.adminName || '',
+        phone: store.phone || ''
+      }
+    });
+  };
+
+  const handleEditSubmit = async (storeId: string, data: any) => {
+    try {
+      await api.put(`/superadmin/stores/${storeId}`, data);
+      toast.success('Store details updated successfully');
+      setEditModal(prev => ({ ...prev, isOpen: false }));
+      fetchStoresAndStats();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update store details');
+    }
+  };
+
   const submitResetPassword = async () => {
     if (newPassword.length < 6) {
       toast.error('Password must be at least 6 characters long');
@@ -126,6 +155,13 @@ export default function SuperAdminPage() {
         showPassword={showPassword}
         setShowPassword={setShowPassword}
         onSubmit={submitResetPassword}
+      />
+
+      <EditStoreDetailsModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal(prev => ({ ...prev, isOpen: false }))}
+        storeDetails={editModal.storeDetails}
+        onSubmit={handleEditSubmit}
       />
 
       {/* Top Stat Cards */}
@@ -313,6 +349,7 @@ export default function SuperAdminPage() {
         onUpdatePlan={handleUpdatePlan}
         onOpenResetModal={openResetModal}
         onDeleteStore={handleDeleteStore}
+        onOpenEditModal={openEditModal}
       />
 
       <GlobalAnnouncements />
