@@ -33,6 +33,11 @@ app.get('/', (req, res) => {
   res.json({ message: 'PharmaTrack API is running' });
 });
 
+// Ultra-lightweight endpoint specifically for Render keep-awake
+app.get('/api/ping', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date() });
+});
+
 // Start cron jobs
 require('./services/expiryAlertCron')();
 
@@ -40,4 +45,16 @@ require('./services/expiryAlertCron')();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Self-ping logic to keep Render awake natively
+  const https = require('https');
+  setInterval(() => {
+    https.get('https://pharmatrack-xqr3.onrender.com/api/ping', (res) => {
+      console.log(`[Self-Ping] Keep-awake successful! Status: ${res.statusCode}`);
+    }).on('error', (err) => {
+      console.error('[Self-Ping] Keep-awake failed:', err.message);
+    });
+  }, 14 * 60 * 1000); // Ping every 14 minutes
+  
+  console.log('Self-ping keep-awake cron initialized (14m interval).');
 });
