@@ -225,9 +225,16 @@ export default function BillingPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone Number</label>
                 <Input 
-                  placeholder="Optional" 
+                  type="tel"
+                  placeholder="Optional (10 digits)" 
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    if (val.length <= 10) {
+                      setCustomerPhone(val);
+                    }
+                  }}
+                  maxLength={10}
                 />
               </div>
             </CardContent>
