@@ -2,6 +2,7 @@ const Store = require('../models/Store');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Bill = require('../models/Bill');
+const SystemSettings = require('../models/SystemSettings');
 
 // @desc    Get all stores with stats
 // @route   GET /api/superadmin/stores
@@ -198,6 +199,107 @@ exports.getDashboardStats = async (req, res) => {
       platformActivity,
       churnRiskStores
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get system settings
+// @route   GET /api/superadmin/settings
+// @access  Private/SuperAdmin
+exports.getSystemSettings = async (req, res) => {
+  try {
+    let settings = await SystemSettings.findOne();
+    if (!settings) {
+      settings = await SystemSettings.create({});
+    }
+    res.status(200).json(settings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update maintenance mode
+// @route   PUT /api/superadmin/settings/maintenance
+// @access  Private/SuperAdmin
+exports.updateMaintenanceMode = async (req, res) => {
+  try {
+    const { maintenanceMode } = req.body;
+    let settings = await SystemSettings.findOne();
+    if (!settings) {
+      settings = new SystemSettings({});
+    }
+    settings.maintenanceMode = maintenanceMode;
+    await settings.save();
+    
+    res.status(200).json(settings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update SMTP config
+// @route   PUT /api/superadmin/settings/smtp
+// @access  Private/SuperAdmin
+exports.updateSmtpConfig = async (req, res) => {
+  try {
+    const { host, port, user, pass } = req.body;
+    let settings = await SystemSettings.findOne();
+    if (!settings) {
+      settings = new SystemSettings({});
+    }
+    settings.smtpConfig = { host, port, user, pass };
+    await settings.save();
+    
+    res.status(200).json(settings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Test SMTP config
+// @route   POST /api/superadmin/settings/smtp/test
+// @access  Private/SuperAdmin
+exports.testSmtpConfig = async (req, res) => {
+  try {
+    const { host, port, user, pass } = req.body;
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      auth: { user, pass }
+    });
+    
+    await transporter.verify();
+    
+    const mailOptions = {
+      from: `"PharmaTrack Test" <${user}>`,
+      to: req.user.email,
+      subject: 'PharmaTrack SMTP Test Successful',
+      text: 'Your custom SMTP configuration is working perfectly!',
+    };
+    
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Test email sent successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get database backup
+// @route   GET /api/superadmin/backup
+// @access  Private/SuperAdmin
+exports.getDatabaseBackup = async (req, res) => {
+  try {
+    const collections = {
+      stores: await Store.find(),
+      users: await User.find(),
+      products: await Product.find(),
+      bills: await Bill.find(),
+    };
+    res.setHeader('Content-disposition', 'attachment; filename=pharmatrack_backup.json');
+    res.setHeader('Content-type', 'application/json');
+    res.status(200).send(JSON.stringify(collections, null, 2));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

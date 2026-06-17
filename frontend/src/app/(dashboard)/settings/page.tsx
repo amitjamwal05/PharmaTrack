@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { UserProfile } from '@/components/settings/UserProfile';
 import { PlatformStatus } from '@/components/settings/PlatformStatus';
 import { StaffManagement } from '@/components/settings/StaffManagement';
+import { SmtpConfig } from '@/components/settings/SmtpConfig';
+import { BackupManagement } from '@/components/settings/BackupManagement';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -15,6 +17,8 @@ export default function SettingsPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <UserProfile user={user} />
         <PlatformStatus user={user} />
+        <SmtpConfig user={user} />
+        <BackupManagement user={user} />
       </div>
 
       <StaffManagement user={user} />

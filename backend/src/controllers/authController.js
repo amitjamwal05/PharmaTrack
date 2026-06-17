@@ -4,18 +4,32 @@ const Otp = require('../models/Otp');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const SystemSettings = require('../models/SystemSettings');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD,
-  },
-});
+const getTransporter = async () => {
+  const settings = await SystemSettings.findOne();
+  if (settings && settings.smtpConfig && settings.smtpConfig.host) {
+    return nodemailer.createTransport({
+      host: settings.smtpConfig.host,
+      port: settings.smtpConfig.port,
+      auth: {
+        user: settings.smtpConfig.user,
+        pass: settings.smtpConfig.pass,
+      }
+    });
+  }
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_APP_PASSWORD,
+    },
+  });
+};
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
+    expiresIn: '24h',
   });
 };
 
@@ -92,6 +106,11 @@ exports.loginUser = async (req, res) => {
     const user = await User.findOne({ email }).populate('storeId');
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      const settings = await SystemSettings.findOne();
+      if (settings && settings.maintenanceMode && user.role !== 'superadmin') {
+        return res.status(503).json({ message: 'MAINTENANCE_MODE' });
+      }
+
       res.json({
         _id: user.id,
         name: user.name,
@@ -239,14 +258,18 @@ exports.sendOtp = async (req, res) => {
 
     await Otp.create({ email, otp });
 
+    const settings = await SystemSettings.findOne();
+    const fromEmail = (settings && settings.smtpConfig && settings.smtpConfig.user) ? settings.smtpConfig.user : process.env.EMAIL_USER;
+
     const mailOptions = {
-      from: `"PharmaTrack Verification" <${process.env.EMAIL_USER}>`,
+      from: `"PharmaTrack Verification" <${fromEmail}>`,
       to: email,
       subject: 'Your PharmaTrack Registration OTP',
       text: `Your verification code is: ${otp}. It will expire in 10 minutes.`,
       html: `<p>Your verification code is: <strong style="font-size: 24px;">${otp}</strong></p><p>It will expire in 10 minutes.</p>`,
     };
 
+    const transporter = await getTransporter();
     await transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'OTP sent successfully' });
   } catch (error) {

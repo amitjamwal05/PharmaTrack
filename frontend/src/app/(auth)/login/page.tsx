@@ -1,19 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { Eye, EyeOff, Activity, ShieldCheck, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('error') === 'maintenance') {
+        setShowMaintenancePopup(true);
+        window.history.replaceState({}, document.title, '/login');
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +40,33 @@ export default function LoginPage() {
 
     const result = await login({ email, password });
     if (!result.success) {
-      setError(result.message);
+      if (result.message === 'MAINTENANCE_MODE') {
+        setShowMaintenancePopup(true);
+      } else {
+        setError(result.message);
+      }
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="flex min-h-screen lg:h-screen bg-background lg:overflow-hidden">
+      <Dialog open={showMaintenancePopup} onOpenChange={setShowMaintenancePopup}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-red-600 dark:text-red-400 flex items-center gap-2">
+              <ShieldCheck className="w-6 h-6" /> System Maintenance
+            </DialogTitle>
+            <DialogDescription className="text-base pt-4">
+              The system is currently offline for scheduled maintenance. We are working hard to bring it back online shortly. Please check back later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end pt-4">
+            <Button onClick={() => setShowMaintenancePopup(false)} variant="outline">Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Left Side - Visual/Branding (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-teal-950 overflow-hidden items-center justify-center">
         {/* Abstract Background Gradients */}
