@@ -11,7 +11,8 @@ import {
   Settings,
   Users,
   Truck,
-  BarChart3
+  BarChart3,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -45,8 +46,11 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col w-full md:w-64 h-full bg-slate-900 text-white shadow-xl">
-      <div className="flex items-center justify-center h-16 border-b border-slate-700">
-        <h1 className="text-2xl font-bold text-teal-400">PharmaTrack</h1>
+      <div className="flex items-center justify-center h-16 border-b border-slate-700 space-x-3">
+        <div className="bg-white/10 p-1.5 rounded-xl border border-white/20 shadow-sm">
+          <Activity className="w-6 h-6 text-teal-400" />
+        </div>
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">Pharma<span className="text-teal-400">Track</span></h1>
       </div>
       <div className="flex-1 overflow-y-auto">
         <nav className="px-2 py-4 space-y-1">
