@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import Receipt from '@/components/billing/Receipt';
 import ProductSearch from '@/components/billing/ProductSearch';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function BillingPage() {
   const { user } = useAuth();
@@ -33,14 +35,6 @@ export default function BillingPage() {
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  useEffect(() => {
-    if (completedBill) {
-      setTimeout(() => {
-        window.print();
-      }, 500); // Small delay to let the DOM render the receipt
-    }
-  }, [completedBill]);
 
   const fetchProducts = async () => {
     try {
@@ -102,41 +96,113 @@ export default function BillingPage() {
   const totalGst = cart.reduce((acc, item) => acc + ((item.sellingPrice * item.quantity) * (item.gstRate || 0) / 100), 0);
   const totalAmount = subtotal + totalGst - discountAmount;
 
-  const handleCheckout = async () => {
+  const handleCheckout = useCallback(async () => {
     if (cart.length === 0) {
       toast.error('Cart is empty');
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        customerName,
-        customerPhone,
-        paymentMethod,
-        discountAmount,
-        items: cart.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity
-        }))
-      };
+    const payload = {
+      customerName,
+      customerPhone,
+      paymentMethod,
+      discountAmount,
+      items: cart.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+      }))
+    };
 
+    try {
+      setIsSubmitting(true);
       const res = await api.post('/bills', payload);
-      toast.success(`Bill ${res.data.billNumber} created successfully!`);
+      
+      toast.success('Payment completed successfully!', {
+        action: {
+          label: 'Download Invoice PDF',
+          onClick: () => generateInvoicePDF(res.data)
+        },
+        duration: 10000,
+      });
       
       setCompletedBill(res.data);
       
-      // Reset POS
+      // Clear cart
       setCart([]);
       setCustomerName('');
       setCustomerPhone('');
       setDiscountAmount(0);
-      fetchProducts(); // Refresh stock
+      setPaymentMethod('cash');
+      
+      // Refresh products to get updated stock
+      fetchProducts();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to create bill');
     } finally {
       setIsSubmitting(false);
     }
+  }, [user, cart, customerName, customerPhone, paymentMethod, discountAmount]);
+
+  const generateInvoicePDF = (billData: any) => {
+    const doc = new jsPDF();
+    
+    // Store Info
+    doc.setFontSize(20);
+    doc.text(user?.storeName || 'PharmaTrack Store', 14, 22);
+    
+    doc.setFontSize(10);
+    // Since we don't have storeId populated with full details everywhere, we'll try to display it if available
+    doc.text(`Store Address / GSTIN`, 14, 30);
+    
+    // Bill Info
+    doc.setFontSize(12);
+    doc.text('TAX INVOICE', 14, 45);
+    doc.setFontSize(10);
+    doc.text(`Bill No: ${billData.billNumber}`, 14, 52);
+    doc.text(`Date: ${new Date(billData.createdAt).toLocaleString()}`, 14, 58);
+    
+    if (billData.customerName) doc.text(`Customer: ${billData.customerName}`, 14, 64);
+    if (billData.customerPhone) doc.text(`Phone: ${billData.customerPhone}`, 14, 70);
+
+    const tableColumn = ["Item", "Batch", "Qty", "Price", "GST", "Total"];
+    const tableRows = billData.items.map((item: any) => [
+      item.productName,
+      item.batchNumber || '-',
+      item.quantity,
+      `Rs. ${item.sellingPrice.toFixed(2)}`,
+      `Rs. ${(item.gstAmount || 0).toFixed(2)}`,
+      `Rs. ${item.total.toFixed(2)}`
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 80,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [13, 148, 136] } // Teal-600
+    });
+
+    // @ts-ignore
+    const finalY = (doc as any).lastAutoTable?.finalY || 80;
+    
+    doc.text(`Subtotal: Rs. ${billData.subtotal.toFixed(2)}`, 140, finalY + 10);
+    doc.text(`Total GST: Rs. ${billData.totalGst.toFixed(2)}`, 140, finalY + 16);
+    if (billData.discountAmount > 0) {
+      doc.text(`Discount: Rs. ${billData.discountAmount.toFixed(2)}`, 140, finalY + 22);
+    }
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Grand Total: Rs. ${billData.totalAmount.toFixed(2)}`, 140, finalY + 30);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Payment Method: ${billData.paymentMethod.toUpperCase()}`, 14, finalY + 30);
+
+    doc.text('Thank you for your business!', 14, finalY + 50);
+
+    doc.save(`${billData.billNumber}.pdf`);
   };
 
   if (completedBill) {

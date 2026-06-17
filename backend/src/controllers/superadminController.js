@@ -244,6 +244,11 @@ exports.updateMaintenanceMode = async (req, res) => {
 exports.updateSmtpConfig = async (req, res) => {
   try {
     const { host, port, user, pass } = req.body;
+    
+    if (!host || !port || !user || !pass) {
+      return res.status(400).json({ message: 'All SMTP fields are required' });
+    }
+
     let settings = await SystemSettings.findOne();
     if (!settings) {
       settings = new SystemSettings({});

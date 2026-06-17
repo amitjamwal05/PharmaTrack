@@ -24,6 +24,10 @@ export function SmtpConfig({ user }: { user: any }) {
   if (user?.role !== 'superadmin') return null;
 
   const handleSave = async () => {
+    if (!config.host || !config.user || !config.pass || !config.port) {
+      toast.error('All SMTP fields are required');
+      return;
+    }
     try {
       setLoading(true);
       await api.put('/superadmin/settings/smtp', config);

@@ -10,7 +10,8 @@ import {
   FileText,
   Settings,
   Users,
-  Truck
+  Truck,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -20,7 +21,7 @@ const navigation = [
   { name: 'Stock Management', href: '/stock', icon: ShoppingCart },
   { name: 'Expiry Tracking', href: '/expiry', icon: AlertTriangle },
   { name: 'Billing', href: '/billing', icon: FileText },
-  { name: 'Reports', href: '/reports', icon: FileText },
+  { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Vendors', href: '/vendors', icon: Truck },
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Super Admin', href: '/superadmin', icon: Users },

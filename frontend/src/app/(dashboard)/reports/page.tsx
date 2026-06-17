@@ -5,8 +5,9 @@ import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, TrendingUp, DollarSign } from 'lucide-react';
+import { FileText, TrendingUp, DollarSign, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 import { RevenueLineChart } from '@/components/charts/RevenueLineChart';
 import { ProfitMarginBarChart } from '@/components/charts/ProfitMarginBarChart';
@@ -15,6 +16,7 @@ import { TopProductsPieChart } from '@/components/charts/TopProductsPieChart';
 export default function ReportsPage() {
   const [salesReport, setSalesReport] = useState<any>(null);
   const [stockValue, setStockValue] = useState<any>(null);
+  const [rawBills, setRawBills] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: format(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd'),
@@ -30,6 +32,7 @@ export default function ReportsPage() {
       ]);
       
       const bills = salesRes.data.bills || [];
+      setRawBills(bills);
       const dailySalesMap: Record<string, any> = {};
       const topProductsMap: Record<string, number> = {};
       
@@ -88,10 +91,54 @@ export default function ReportsPage() {
     fetchReports();
   }, []);
 
+  const exportCSV = () => {
+    try {
+      if (rawBills.length === 0) {
+        toast.error('No data to export');
+        return;
+      }
+
+      const headers = ['Bill Number', 'Date', 'Customer', 'Subtotal', 'GST', 'Discount', 'Total', 'Payment Method'];
+      
+      const csvRows = rawBills.map(b => [
+        b.billNumber,
+        new Date(b.createdAt).toLocaleString(),
+        b.customerName || 'N/A',
+        (b.subtotal || 0).toFixed(2),
+        (b.totalGst || 0).toFixed(2),
+        (b.discountAmount || 0).toFixed(2),
+        (b.totalAmount || 0).toFixed(2),
+        b.paymentMethod || 'cash'
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...csvRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `sales_report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Report exported successfully!');
+    } catch (error) {
+      toast.error('Failed to export CSV');
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
+        <Button onClick={exportCSV} className="gap-2" disabled={loading || rawBills.length === 0}>
+          <Download className="w-4 h-4" />
+          Export to CSV
+        </Button>
       </div>
 
       <Card>
