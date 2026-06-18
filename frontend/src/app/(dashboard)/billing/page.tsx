@@ -13,7 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Trash2, Plus, Receipt as ReceiptIcon, Printer, ArrowLeft } from 'lucide-react';
+import { Trash2, Plus, Receipt as ReceiptIcon, Printer, ArrowLeft, Loader2, Search, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import Receipt from '@/components/billing/Receipt';
@@ -238,13 +238,17 @@ export default function BillingPage() {
                   <TableBody>
                     {cart.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                          Cart is empty
+                        <TableCell colSpan={5} className="text-center py-16 text-muted-foreground">
+                          <div className="flex flex-col items-center justify-center">
+                            <ShoppingCart className="h-10 w-10 mb-3 text-muted-foreground/40" />
+                            <h3 className="text-base font-medium text-foreground">Cart is empty</h3>
+                            <p className="text-sm mt-1">Search and select products to add them to the bill.</p>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ) : (
                       cart.map((item) => (
-                        <TableRow key={item.productId}>
+                        <TableRow key={item.productId} className="hover:bg-teal-50/50 dark:hover:bg-teal-900/20 transition-colors border-l-2 border-transparent hover:border-teal-500">
                           <TableCell>
                             <div className="font-medium">{item.productName}</div>
                             <div className="text-xs text-muted-foreground">Batch: {item.batchNumber}</div>

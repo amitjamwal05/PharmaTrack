@@ -13,7 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { AlertCircle, AlertTriangle, CheckCircle2, Search } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Search, PackageSearch } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { getPaginationItems } from '@/lib/utils';
 
@@ -122,8 +122,12 @@ export default function ExpiryPage() {
                   </TableRow>
                 ) : filteredProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10">
-                      No products found.
+                    <TableCell colSpan={6} className="text-center py-20">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <PackageSearch className="h-12 w-12 mb-4 text-muted-foreground/50" />
+                        <h3 className="text-lg font-medium text-foreground">All clear!</h3>
+                        <p className="text-sm mt-1">No products match this status or search query.</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -133,7 +137,7 @@ export default function ExpiryPage() {
                     const StatusIcon = status.icon;
                     
                     return (
-                      <TableRow key={product._id}>
+                      <TableRow key={product._id} className="hover:bg-teal-50/50 dark:hover:bg-teal-900/20 transition-colors border-l-2 border-transparent hover:border-teal-500">
                         <TableCell>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.color}`}>
                             <StatusIcon className="w-3 h-3 mr-1" />

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Edit, Truck, Plus } from 'lucide-react';
+import { Trash2, Edit, Truck, Plus, PackageSearch } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function VendorsPage() {
@@ -200,10 +200,18 @@ export default function VendorsPage() {
                 {loading ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-6">Loading vendors...</TableCell></TableRow>
                 ) : vendors.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-6">No vendors added yet.</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-20">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <PackageSearch className="h-12 w-12 mb-4 text-muted-foreground/50" />
+                        <h3 className="text-lg font-medium text-foreground">No vendors yet</h3>
+                        <p className="text-sm mt-1">Click the "Add Vendor" button to add your first supplier.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   vendors.map(vendor => (
-                    <TableRow key={vendor._id}>
+                    <TableRow key={vendor._id} className="hover:bg-teal-50/50 dark:hover:bg-teal-900/20 transition-colors border-l-2 border-transparent hover:border-teal-500">
                       <TableCell className="font-medium">{vendor.name}</TableCell>
                       <TableCell>{vendor.contactPerson || 'N/A'}</TableCell>
                       <TableCell>

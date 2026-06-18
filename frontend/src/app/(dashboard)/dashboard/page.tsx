@@ -177,7 +177,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {user?.role !== 'staff' && (
-          <Card className="border-l-4 border-l-teal-500">
+          <Card className="border-l-4 border-l-teal-500 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
               <IndianRupee className="w-4 h-4 text-teal-600" />
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         )}
 
         {user?.role !== 'staff' && (
-          <Card className="border-l-4 border-l-purple-500">
+          <Card className="border-l-4 border-l-purple-500 animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Current Stock Value</CardTitle>
               <Wallet className="w-4 h-4 text-purple-600" />
@@ -203,7 +203,7 @@ export default function DashboardPage() {
         )}
 
         {user?.role === 'staff' && (
-          <Card className="border-l-4 border-l-indigo-500">
+          <Card className="border-l-4 border-l-indigo-500 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Products Sold Today</CardTitle>
               <ShoppingCart className="w-4 h-4 text-indigo-600" />
@@ -216,7 +216,7 @@ export default function DashboardPage() {
         )}
 
         {user?.role === 'staff' && (
-          <Card className="border-l-4 border-l-green-500">
+          <Card className="border-l-4 border-l-green-500 animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Products Added Today</CardTitle>
               <PlusCircle className="w-4 h-4 text-green-600" />
@@ -228,7 +228,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        <Card className="border-l-4 border-l-blue-500 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors" onClick={() => router.push('/products')}>
+        <Card className="border-l-4 border-l-blue-500 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors animate-slide-up-fade" style={{ animationDelay: '300ms' }} onClick={() => router.push('/products')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
             <Package className="w-4 h-4 text-blue-600" />
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-orange-500 cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors" onClick={() => router.push('/stock')}>
+        <Card className="border-l-4 border-l-orange-500 cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors animate-slide-up-fade" style={{ animationDelay: '400ms' }} onClick={() => router.push('/stock')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock</CardTitle>
             <TrendingUp className="w-4 h-4 text-orange-600" />

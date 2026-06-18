@@ -16,7 +16,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, PackageSearch } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProductsPage() {
@@ -131,13 +131,17 @@ export default function ProductsPage() {
                   </TableRow>
                 ) : filteredProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10">
-                      No products found.
+                    <TableCell colSpan={7} className="text-center py-20">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <PackageSearch className="h-12 w-12 mb-4 text-muted-foreground/50" />
+                        <h3 className="text-lg font-medium text-foreground">No products found</h3>
+                        <p className="text-sm mt-1">Try adjusting your search query or add a new product.</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   currentProducts.map((product) => (
-                    <TableRow key={product._id}>
+                    <TableRow key={product._id} className="hover:bg-teal-50/50 dark:hover:bg-teal-900/20 transition-colors border-l-2 border-transparent hover:border-teal-500">
                       <TableCell className="font-medium">
                         <Link href={`/products/${product._id}`} className="text-teal-600 dark:text-teal-400 hover:underline">
                           {product.productName}
