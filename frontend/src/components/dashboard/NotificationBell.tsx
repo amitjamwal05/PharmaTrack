@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, AlertTriangle, Info, PackageX } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -8,10 +8,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getAlertIcon } from './AnnouncementBanners';
+import { useRouter } from 'next/navigation';
 
 export default function NotificationBell({ announcements }: { announcements: any[] }) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
+  const router = useRouter();
+
+  const getAlertIcon = (category: string, type?: string) => {
+    if (category === 'expiry') return <AlertTriangle className="w-4 h-4 mr-2 text-orange-500" />;
+    if (category === 'low_stock') return <PackageX className="w-4 h-4 mr-2 text-red-500" />;
+    
+    switch (type) {
+      case 'warning': return <AlertTriangle className="w-4 h-4 mr-2 text-amber-500" />;
+      case 'danger': return <AlertTriangle className="w-4 h-4 mr-2 text-red-500" />;
+      default: return <Info className="w-4 h-4 mr-2 text-blue-500" />;
+    }
+  };
+
+  const handleNotificationClick = (ann: any) => {
+    if (ann.category === 'expiry') {
+      router.push(`/expiry?search=${encodeURIComponent(ann.productName)}`);
+    } else if (ann.category === 'low_stock') {
+      router.push(`/stock?search=${encodeURIComponent(ann.productName)}`);
+    } else {
+      setSelectedAnnouncement(ann);
+    }
+  };
 
   return (
     <>
@@ -35,10 +57,10 @@ export default function NotificationBell({ announcements }: { announcements: any
                 <DropdownMenuItem 
                   key={ann._id} 
                   className="flex flex-col items-start p-3 focus:bg-muted cursor-pointer"
-                  onClick={() => setSelectedAnnouncement(ann)}
+                  onClick={() => handleNotificationClick(ann)}
                 >
                   <div className="flex items-center font-semibold mb-1">
-                    {getAlertIcon(ann.type)}
+                    {getAlertIcon(ann.category, ann.type)}
                     <span>{ann.title}</span>
                   </div>
                   <span className="text-xs text-muted-foreground line-clamp-2">{ann.message}</span>
@@ -53,7 +75,7 @@ export default function NotificationBell({ announcements }: { announcements: any
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center text-lg">
-              {selectedAnnouncement && getAlertIcon(selectedAnnouncement.type)}
+              {selectedAnnouncement && getAlertIcon(selectedAnnouncement.category, selectedAnnouncement.type)}
               {selectedAnnouncement?.title}
             </DialogTitle>
           </DialogHeader>

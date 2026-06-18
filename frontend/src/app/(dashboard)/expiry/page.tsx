@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { AlertCircle, AlertTriangle, CheckCircle2, Search } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
+import { getPaginationItems } from '@/lib/utils';
 
 export default function ExpiryPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -24,6 +25,14 @@ export default function ExpiryPage() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search');
+    if (search) {
+      setSearchTerm(search);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchExpiring = async () => {
@@ -162,16 +171,20 @@ export default function ExpiryPage() {
                   Previous
                 </Button>
                 <div className="flex flex-wrap items-center gap-1">
-                  {Array.from({ length: totalPages }).map((_, i) => (
-                    <Button
-                      key={i}
-                      variant={currentPage === i + 1 ? 'default' : 'outline'}
-                      size="sm"
-                      className={`w-8 h-8 p-0 ${currentPage === i + 1 ? 'bg-teal-600 hover:bg-teal-700' : ''}`}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </Button>
+                  {getPaginationItems(currentPage, totalPages).map((item, i) => (
+                    item === '...' ? (
+                      <span key={`ellipsis-${i}`} className="px-2 py-1 text-muted-foreground">...</span>
+                    ) : (
+                      <Button
+                        key={i}
+                        variant={currentPage === item ? 'default' : 'outline'}
+                        size="sm"
+                        className={`w-8 h-8 p-0 ${currentPage === item ? 'bg-teal-600 hover:bg-teal-700' : ''}`}
+                        onClick={() => setCurrentPage(item as number)}
+                      >
+                        {item}
+                      </Button>
+                    )
                   ))}
                 </div>
                 <Button 

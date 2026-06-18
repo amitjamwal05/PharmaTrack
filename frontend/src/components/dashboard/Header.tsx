@@ -24,15 +24,39 @@ export default function Header() {
 
   useEffect(() => {
     if (user) {
-      api.get('/announcements/active')
-        .then(res => setAnnouncements(res.data))
-        .catch(err => console.error('Failed to load announcements', err));
+      Promise.all([
+        api.get('/announcements/active').catch(() => ({ data: [] })),
+        api.get('/products/expiring').catch(() => ({ data: [] })),
+        api.get('/products/low-stock').catch(() => ({ data: [] }))
+      ]).then(([annRes, expRes, stockRes]) => {
+        const sysAnns = annRes.data.map((a: any) => ({ ...a, category: 'system' }));
+        
+        const expAnns = expRes.data.map((p: any) => ({
+          _id: `exp_${p._id}`,
+          category: 'expiry',
+          title: `Expiring Soon: ${p.productName}`,
+          message: `Batch ${p.batchNumber || 'N/A'} expires on ${new Date(p.expiryDate).toLocaleDateString()}.`,
+          productId: p._id,
+          productName: p.productName
+        }));
+
+        const stockAnns = stockRes.data.map((p: any) => ({
+          _id: `stock_${p._id}`,
+          category: 'low_stock',
+          title: `Low Stock: ${p.productName}`,
+          message: `Only ${p.quantity} left in stock (Reorder level: ${p.reorderLevel || 0}).`,
+          productId: p._id,
+          productName: p.productName
+        }));
+
+        setAnnouncements([...sysAnns, ...expAnns, ...stockAnns]);
+      }).catch(err => console.error('Failed to load notifications', err));
     }
   }, [user]);
 
   return (
     <div className="flex flex-col w-full">
-      <AnnouncementBanners announcements={announcements} />
+      <AnnouncementBanners announcements={announcements.filter(a => a.category === 'system')} />
       
       <header className="flex items-center justify-between h-16 px-6 bg-card border-b border-border">
         <div className="flex items-center md:hidden">
