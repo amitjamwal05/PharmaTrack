@@ -22,7 +22,7 @@ exports.getSalesReport = async (req, res) => {
       };
     }
 
-    const bills = await Bill.find(query).sort('-createdAt');
+    const bills = await Bill.find(query).populate('userId', 'name').sort('-createdAt');
     
     let totalSales = 0;
     let totalGst = 0;

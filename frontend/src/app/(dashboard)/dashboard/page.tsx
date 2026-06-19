@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { Package, AlertTriangle, AlertCircle, TrendingUp, FileText, Wallet, IndianRupee, ShoppingCart, PlusCircle, PackagePlus, Users, Receipt } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays } from 'date-fns';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,7 +13,7 @@ import { useRouter } from 'next/navigation';
 
 import { RevenueLineChart } from '@/components/charts/RevenueLineChart';
 import { TopProductsPieChart } from '@/components/charts/TopProductsPieChart';
-import { PaymentMethodPieChart } from '@/components/charts/PaymentMethodPieChart';
+import { CriticalStockWidget } from '@/components/widgets/CriticalStockWidget';
 import { StaffLeaderboard } from '@/components/charts/StaffLeaderboard';
 
 export default function DashboardPage() {
@@ -23,13 +24,16 @@ export default function DashboardPage() {
     expired: 0,
     currentStockValue: 0,
     todaySales: 0,
+    totalProfit: 0,
     productsSoldToday: 0,
     productsAddedToday: 0,
   });
 
+  const [dateRange, setDateRange] = useState('7days');
   const [recentBills, setRecentBills] = useState<any[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
   const [topProductsData, setTopProductsData] = useState<any[]>([]);
+  const [criticalStockData, setCriticalStockData] = useState<any[]>([]);
   const [paymentMethodData, setPaymentMethodData] = useState<any[]>([]);
   const [staffPerformanceData, setStaffPerformanceData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,84 +49,88 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setLoading(true);
       try {
+        let startD = new Date();
+        if (dateRange === '7days') startD = subDays(new Date(), 7);
+        if (dateRange === 'month') startD = subDays(new Date(), 30);
+        if (dateRange === 'year') startD = subDays(new Date(), 365);
+        
+        const startDate = format(startD, 'yyyy-MM-dd');
         const endDate = format(new Date(), 'yyyy-MM-dd');
-        const startDate = format(subDays(new Date(), 7), 'yyyy-MM-dd'); // Last 7 days
 
-        const [stockRes, expiryRes, billsRes, salesRes, historyRes] = await Promise.all([
+        const [stockRes, expiryRes, salesRes, historyRes, lowStockRes] = await Promise.all([
           api.get('/reports/stock'),
           api.get('/reports/expiry'),
-          api.get('/bills'),
           api.get(`/reports/sales?startDate=${startDate}&endDate=${endDate}`),
-          api.get('/stock/history').catch(() => ({ data: [] }))
+          api.get('/stock/history').catch(() => ({ data: [] })),
+          api.get('/products/low-stock')
         ]);
 
-        const lowStockRes = await api.get('/products/low-stock');
+        let daysCount = 0;
+        if (dateRange === 'today') daysCount = 1;
+        if (dateRange === '7days') daysCount = 7;
+        if (dateRange === 'month') daysCount = 30;
+        if (dateRange === 'year') daysCount = 365;
 
-        // Get top 5 recent bills
-        const sortedBills = [...billsRes.data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setRecentBills(sortedBills.slice(0, 5));
-        
-        // Format sales data for Recharts (last 7 days)
-        const last7Days = Array.from({ length: 7 }).map((_, i) => {
+        const dateRangeArray = Array.from({ length: daysCount }).map((_, i) => {
           const d = subDays(new Date(), i);
           return {
             dateStr: format(d, 'yyyy-MM-dd'),
             displayDate: format(d, 'MMM dd'),
             revenue: 0
           };
-        }).reverse(); // oldest to newest
+        }).reverse();
+
+        const topProductsMap: Record<string, number> = {};
+        const staffMap: Record<string, number> = {};
 
         const todayStr = format(new Date(), 'yyyy-MM-dd');
         let productsSoldToday = 0;
-        
-        const topProductsMap: Record<string, number> = {};
-        const paymentMap: Record<string, number> = {};
-        const staffMap: Record<string, number> = {};
 
-        billsRes.data.forEach((bill: any) => {
+        salesRes.data.bills.forEach((bill: any) => {
           const billDate = format(new Date(bill.createdAt), 'yyyy-MM-dd');
-          const day = last7Days.find(d => d.dateStr === billDate);
+          const day = dateRangeArray.find(d => d.dateStr === billDate);
           if (day) {
             day.revenue += bill.totalAmount;
           }
+          
           if (billDate === todayStr) {
             productsSoldToday += bill.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
-            
-            const method = bill.paymentMethod || 'cash';
-            paymentMap[method] = (paymentMap[method] || 0) + bill.totalAmount;
-            
-            const staffName = bill.userId?.name || 'Unknown Staff';
-            staffMap[staffName] = (staffMap[staffName] || 0) + bill.totalAmount;
           }
           
-          // Accumulate for top products pie chart
+          const staffName = bill.userId?.name || 'Unknown Staff';
+          staffMap[staffName] = (staffMap[staffName] || 0) + bill.totalAmount;
+          
           bill.items.forEach((item: any) => {
             topProductsMap[item.productName] = (topProductsMap[item.productName] || 0) + item.quantity;
           });
         });
 
-        const todaySales = last7Days[last7Days.length - 1].revenue;
+        // Get recent bills
+        const sortedBills = [...salesRes.data.bills].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setRecentBills(sortedBills.slice(0, 5));
 
         let productsAddedToday = 0;
         historyRes.data.forEach((history: any) => {
-          if (format(new Date(history.createdAt), 'yyyy-MM-dd') === todayStr && history.quantityChange > 0 && history.reason !== 'sale') {
-             productsAddedToday += history.quantityChange;
+          if (format(new Date(history.createdAt), 'yyyy-MM-dd') === todayStr && history.reason === 'restock') {
+            productsAddedToday += history.quantityChange;
           }
         });
 
         setStats({
-          totalProducts: stockRes.data.totalUniqueProducts || 0,
-          lowStock: lowStockRes.data.length || 0,
-          expiringSoon: expiryRes.data.expiringSoonCount || 0,
-          expired: expiryRes.data.expiredCount || 0,
+          totalProducts: stockRes.data.totalProducts || stockRes.data.totalUniqueProducts || 0,
+          lowStock: stockRes.data.lowStockItems || lowStockRes.data.length || 0,
+          expiringSoon: expiryRes.data.expiringSoon || expiryRes.data.expiringSoonCount || 0,
+          expired: expiryRes.data.expired || expiryRes.data.expiredCount || 0,
           currentStockValue: stockRes.data.totalStockValue || 0,
-          todaySales: todaySales || 0,
+          todaySales: salesRes.data.totalSales || 0,
+          totalProfit: salesRes.data.totalProfit || 0,
           productsSoldToday,
           productsAddedToday
         });
 
-        setSalesData(last7Days.map(day => ({
+        setSalesData(dateRangeArray.map(day => ({
           date: day.displayDate,
           revenue: day.revenue
         })));
@@ -133,11 +141,11 @@ export default function DashboardPage() {
           .slice(0, 5); // top 5
         setTopProductsData(topProducts);
 
-        const paymentData = Object.entries(paymentMap).map(([name, value]) => ({ 
-          name: name.charAt(0).toUpperCase() + name.slice(1), 
-          value 
-        }));
-        setPaymentMethodData(paymentData);
+        // Sort low stock items by quantity ascending, take top 5
+        const criticalStock = [...lowStockRes.data]
+          .sort((a, b) => a.quantity - b.quantity)
+          .slice(0, 5);
+        setCriticalStockData(criticalStock);
 
         const staffData = Object.entries(staffMap)
           .map(([name, value]) => ({ name, value }))
@@ -152,7 +160,7 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [dateRange]);
 
   if (loading) {
     return (
@@ -173,18 +181,57 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Welcome back! Here's what's happening today.</p>
+        </div>
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select timeframe" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="7days">Last 7 Days</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {user?.role !== 'staff' && (
           <Card className="border-l-4 border-l-teal-500 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {dateRange === 'today' ? "Today's Sales" : "Total Sales"}
+              </CardTitle>
               <IndianRupee className="w-4 h-4 text-teal-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹{stats.todaySales.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Total revenue today</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.productsSoldToday} products sold
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {user?.role !== 'staff' && (
+          <Card className="border-l-4 border-l-green-500 animate-slide-up-fade bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-900/20" style={{ animationDelay: '150ms' }}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">
+                {dateRange === 'today' ? "Today's Profit" : "Total Profit"}
+              </CardTitle>
+              <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                ₹{stats.totalProfit.toFixed(2)}
+              </div>
+              <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
+                Net margin on sales
+              </p>
             </CardContent>
           </Card>
         )}
@@ -362,7 +409,7 @@ export default function DashboardPage() {
       {user?.role !== 'staff' && (
         <div className="grid gap-6 md:grid-cols-2">
           <div className="min-w-0">
-            <PaymentMethodPieChart data={paymentMethodData} />
+            <CriticalStockWidget data={criticalStockData} />
           </div>
           <div className="min-w-0">
             <StaffLeaderboard data={staffPerformanceData} />
