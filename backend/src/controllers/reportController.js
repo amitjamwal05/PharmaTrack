@@ -94,6 +94,7 @@ exports.getStockReport = async (req, res) => {
 exports.getExpiryReport = async (req, res) => {
   try {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
     
     // Expired
     const expired = await Product.find({
@@ -104,6 +105,7 @@ exports.getExpiryReport = async (req, res) => {
 
     // Expiring within 30 days
     const thirtyDays = new Date();
+    thirtyDays.setHours(23, 59, 59, 999);
     thirtyDays.setDate(today.getDate() + 30);
     const expiringSoon = await Product.find({
       storeId: req.user.storeId,

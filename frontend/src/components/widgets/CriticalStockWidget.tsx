@@ -24,8 +24,8 @@ export function CriticalStockWidget({ data }: { data: any[] }) {
                     <Package className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.category}</p>
+                    <p className="text-sm font-medium truncate">{item.productName || item.name || 'Unknown Product'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.category || 'Uncategorized'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 ml-2">

@@ -121,8 +121,8 @@ export default function DashboardPage() {
         setStats({
           totalProducts: stockRes.data.totalProducts || stockRes.data.totalUniqueProducts || 0,
           lowStock: stockRes.data.lowStockItems || lowStockRes.data.length || 0,
-          expiringSoon: expiryRes.data.expiringSoon || expiryRes.data.expiringSoonCount || 0,
-          expired: expiryRes.data.expired || expiryRes.data.expiredCount || 0,
+          expiringSoon: expiryRes.data.expiringSoonCount ?? expiryRes.data.expiringSoon?.length ?? 0,
+          expired: expiryRes.data.expiredCount ?? expiryRes.data.expired?.length ?? 0,
           currentStockValue: stockRes.data.totalStockValue || 0,
           todaySales: salesRes.data.totalSales || 0,
           totalProfit: salesRes.data.totalProfit || 0,
