@@ -5,7 +5,7 @@ import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, TrendingUp, DollarSign, Download } from 'lucide-react';
+import { FileText, TrendingUp, TrendingDown, DollarSign, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { formatCurrencyTooltip } from '@/lib/utils';
@@ -190,19 +190,39 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-teal-500">
+        <Card 
+          className={`border-l-4 ${
+            (salesReport?.totalProfit || 0) >= 0 
+              ? 'border-l-teal-500 bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/20 dark:to-emerald-900/20'
+              : 'border-l-red-500 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-900/20'
+          }`}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
-            <TrendingUp className="w-4 h-4 text-teal-600" />
+            <CardTitle className={`text-sm font-medium ${
+              (salesReport?.totalProfit || 0) >= 0 ? 'text-teal-800 dark:text-teal-300' : 'text-red-800 dark:text-red-300'
+            }`}>
+              Total Profit
+            </CardTitle>
+            {(salesReport?.totalProfit || 0) >= 0 ? (
+              <TrendingUp className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            ) : (
+              <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+            )}
           </CardHeader>
           <CardContent>
             <div 
-              className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-teal-600 dark:text-teal-400 truncate tracking-tight"
+              className={`text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight ${
+                (salesReport?.totalProfit || 0) >= 0 ? 'text-teal-700 dark:text-teal-400' : 'text-red-700 dark:text-red-400'
+              }`}
               title={formatCurrencyTooltip(salesReport?.totalProfit)}
             >
-              ₹{salesReport?.totalProfit?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+              {(salesReport?.totalProfit || 0) < 0 ? '-' : ''}₹{Math.abs(salesReport?.totalProfit || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 truncate">Gross profit after costs</p>
+            <p className={`text-xs mt-1 ${
+              (salesReport?.totalProfit || 0) >= 0 ? 'text-teal-600/80 dark:text-teal-400/80' : 'text-red-600/80 dark:text-red-400/80'
+            }`}>
+              {(salesReport?.totalProfit || 0) < 0 ? 'Net loss generated' : 'Net profit generated'}
+            </p>
           </CardContent>
         </Card>
 

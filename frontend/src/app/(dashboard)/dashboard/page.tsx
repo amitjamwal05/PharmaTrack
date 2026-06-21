@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
-import { Package, AlertTriangle, AlertCircle, TrendingUp, FileText, Wallet, IndianRupee, ShoppingCart, PlusCircle, PackagePlus, Users, Receipt } from 'lucide-react';
+import { Package, AlertTriangle, AlertCircle, TrendingUp, TrendingDown, FileText, Wallet, IndianRupee, ShoppingCart, PlusCircle, PackagePlus, Users, Receipt } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays } from 'date-fns';
@@ -250,22 +250,35 @@ export default function DashboardPage() {
         )}
 
         {user?.role !== 'staff' && (
-          <Card className="border-l-4 border-l-green-500 animate-slide-up-fade bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-900/20" style={{ animationDelay: '150ms' }}>
+          <Card 
+            className={`border-l-4 animate-slide-up-fade ${
+              stats.totalProfit >= 0 
+                ? 'border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-900/20' 
+                : 'border-l-red-500 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-900/20'
+            }`} 
+            style={{ animationDelay: '150ms' }}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">
+              <CardTitle className={`text-sm font-medium ${stats.totalProfit >= 0 ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
                 {dateRange === 'today' ? "Today's Profit" : "Total Profit"}
               </CardTitle>
-              <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+              {stats.totalProfit >= 0 ? (
+                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+              )}
             </CardHeader>
             <CardContent>
               <div 
-                className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-green-700 dark:text-green-400 truncate tracking-tight"
+                className={`text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight ${
+                  stats.totalProfit >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                }`}
                 title={formatCurrencyTooltip(stats.totalProfit)}
               >
-                ₹{stats.totalProfit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {stats.totalProfit < 0 ? '-' : ''}₹{Math.abs(stats.totalProfit).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
-                Net margin on sales
+              <p className={`text-xs mt-1 ${stats.totalProfit >= 0 ? 'text-green-600/80 dark:text-green-400/80' : 'text-red-600/80 dark:text-red-400/80'}`}>
+                {stats.totalProfit < 0 ? 'Net loss on sales' : 'Net margin on sales'}
               </p>
             </CardContent>
           </Card>
