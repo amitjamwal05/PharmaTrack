@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { FileText, TrendingUp, DollarSign, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { formatCurrencyTooltip } from '@/lib/utils';
 
 import { RevenueLineChart } from '@/components/charts/RevenueLineChart';
 import { ProfitMarginBarChart } from '@/components/charts/ProfitMarginBarChart';
@@ -181,7 +182,7 @@ export default function ReportsPage() {
           <CardContent>
             <div 
               className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-foreground truncate tracking-tight"
-              title={`₹${salesReport?.totalRevenue?.toFixed(2) || '0.00'}`}
+              title={formatCurrencyTooltip(salesReport?.totalRevenue)}
             >
               ₹{salesReport?.totalRevenue?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </div>
@@ -197,7 +198,7 @@ export default function ReportsPage() {
           <CardContent>
             <div 
               className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-teal-600 dark:text-teal-400 truncate tracking-tight"
-              title={`₹${salesReport?.totalProfit?.toFixed(2) || '0.00'}`}
+              title={formatCurrencyTooltip(salesReport?.totalProfit)}
             >
               ₹{salesReport?.totalProfit?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </div>
@@ -229,7 +230,7 @@ export default function ReportsPage() {
           <CardContent>
             <div 
               className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-foreground truncate tracking-tight"
-              title={`₹${stockValue?.totalInventoryValue?.toFixed(2) || '0.00'}`}
+              title={formatCurrencyTooltip(stockValue?.totalInventoryValue)}
             >
               ₹{stockValue?.totalInventoryValue?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </div>

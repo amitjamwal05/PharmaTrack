@@ -8,10 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format, subDays } from 'date-fns';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { RevenueLineChart } from '@/components/charts/RevenueLineChart';
+import { formatCurrencyTooltip } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
-import { RevenueLineChart } from '@/components/charts/RevenueLineChart';
 import { TopProductsPieChart } from '@/components/charts/TopProductsPieChart';
 import { CriticalStockWidget } from '@/components/widgets/CriticalStockWidget';
 import { StaffLeaderboard } from '@/components/charts/StaffLeaderboard';
@@ -213,7 +215,7 @@ export default function DashboardPage() {
             <CardContent>
               <div 
                 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight"
-                title={`₹${stats.todaySales.toFixed(2)}`}
+                title={formatCurrencyTooltip(stats.todaySales)}
               >
                 ₹{stats.todaySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
@@ -235,7 +237,7 @@ export default function DashboardPage() {
             <CardContent>
               <div 
                 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-green-700 dark:text-green-400 truncate tracking-tight"
-                title={`₹${stats.totalProfit.toFixed(2)}`}
+                title={formatCurrencyTooltip(stats.totalProfit)}
               >
                 ₹{stats.totalProfit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
@@ -255,7 +257,7 @@ export default function DashboardPage() {
             <CardContent>
               <div 
                 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight"
-                title={`₹${stats.currentStockValue.toFixed(2)}`}
+                title={formatCurrencyTooltip(stats.currentStockValue)}
               >
                 ₹{stats.currentStockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
