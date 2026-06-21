@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
 import { TopProductsPieChart } from '@/components/charts/TopProductsPieChart';
+import { PaymentMethodPieChart } from '@/components/charts/PaymentMethodPieChart';
 import { CriticalStockWidget } from '@/components/widgets/CriticalStockWidget';
 import { StaffLeaderboard } from '@/components/charts/StaffLeaderboard';
 
@@ -30,6 +31,7 @@ export default function DashboardPage() {
     productsAddedToday: 0,
     myBillsToday: 0,
     mySalesToday: 0,
+    totalBillsToday: 0,
   });
 
   const [dateRange, setDateRange] = useState('7days');
@@ -92,6 +94,8 @@ export default function DashboardPage() {
         let productsSoldToday = 0;
         let myBillsToday = 0;
         let mySalesToday = 0;
+        let totalBillsToday = 0;
+        const paymentMethodMap: Record<string, number> = {};
 
         salesRes.data.bills.forEach((bill: any) => {
           const billDate = format(new Date(bill.createdAt), 'yyyy-MM-dd');
@@ -101,11 +105,15 @@ export default function DashboardPage() {
           }
           
           if (billDate === todayStr) {
+            totalBillsToday++;
             productsSoldToday += bill.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
             if (user?._id && (bill.userId?._id === user._id || bill.userId === user._id)) {
               myBillsToday++;
               mySalesToday += bill.totalAmount;
             }
+            
+            const method = bill.paymentMethod || 'cash';
+            paymentMethodMap[method] = (paymentMethodMap[method] || 0) + bill.totalAmount;
           }
           
           const staffName = bill.userId?.name || 'Unknown Staff';
@@ -140,7 +148,8 @@ export default function DashboardPage() {
           productsSoldToday,
           productsAddedToday,
           myBillsToday,
-          mySalesToday
+          mySalesToday,
+          totalBillsToday
         });
 
         setSalesData(dateRangeArray.map(day => ({
@@ -164,6 +173,11 @@ export default function DashboardPage() {
           .map(([name, value]) => ({ name, value }))
           .sort((a, b) => b.value - a.value);
         setStaffPerformanceData(staffData);
+
+        const paymentData = Object.entries(paymentMethodMap)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value);
+        setPaymentMethodData(paymentData);
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -364,6 +378,19 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground mt-1">Products created today</p>
           </CardContent>
         </Card>
+
+        {user?.role === 'staff' && (
+          <Card className="border-l-4 border-l-pink-500 animate-slide-up-fade" style={{ animationDelay: '600ms' }}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Customers Today</CardTitle>
+              <Users className="w-4 h-4 text-pink-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalBillsToday}</div>
+              <p className="text-xs text-muted-foreground mt-1">Store-wide bills generated</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className={`grid gap-6 ${user?.role === 'staff' ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
@@ -439,7 +466,10 @@ export default function DashboardPage() {
           </div>
 
         <div className="space-y-6 flex flex-col min-w-0">
-          <TopProductsPieChart data={topProductsData} title="Top Selling Products" />
+          <div className={`grid gap-6 ${user?.role === 'staff' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+            <TopProductsPieChart data={topProductsData} title="Top Selling Products" />
+            <PaymentMethodPieChart data={paymentMethodData} title="Payment Methods Today" />
+          </div>
 
           <Card>
             <CardHeader>
