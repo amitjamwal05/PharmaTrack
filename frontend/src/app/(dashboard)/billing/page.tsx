@@ -37,10 +37,12 @@ export default function BillingPage() {
   useEffect(() => {
     if (user?.subscriptionPlan === 'expired') {
       setShowPaywall(true);
-    } else {
-      fetchProducts();
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
     try {
