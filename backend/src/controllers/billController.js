@@ -16,6 +16,11 @@ exports.createBill = async (req, res) => {
     const { items, customerName, customerPhone, paymentMethod, discountAmount = 0 } = req.body;
 
     const storePlan = req.user.storeId?.subscriptionPlan;
+    
+    if (storePlan === 'expired') {
+      return res.status(403).json({ message: 'PAYWALL_TRIGGERED' });
+    }
+
     if (!storePlan || storePlan === 'free' || storePlan === 'pending') {
       const billCount = await Bill.countDocuments({ storeId: req.user.storeId });
       if (billCount >= 5) {
