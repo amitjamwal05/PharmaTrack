@@ -26,9 +26,10 @@ export default function DashboardPage() {
     expired: 0,
     currentStockValue: 0,
     todaySales: 0,
-    totalProfit: 0,
     productsSoldToday: 0,
     productsAddedToday: 0,
+    myBillsToday: 0,
+    mySalesToday: 0,
   });
 
   const [dateRange, setDateRange] = useState('7days');
@@ -89,6 +90,8 @@ export default function DashboardPage() {
 
         const todayStr = format(new Date(), 'yyyy-MM-dd');
         let productsSoldToday = 0;
+        let myBillsToday = 0;
+        let mySalesToday = 0;
 
         salesRes.data.bills.forEach((bill: any) => {
           const billDate = format(new Date(bill.createdAt), 'yyyy-MM-dd');
@@ -99,6 +102,10 @@ export default function DashboardPage() {
           
           if (billDate === todayStr) {
             productsSoldToday += bill.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+            if (user?._id && (bill.userId?._id === user._id || bill.userId === user._id)) {
+              myBillsToday++;
+              mySalesToday += bill.totalAmount;
+            }
           }
           
           const staffName = bill.userId?.name || 'Unknown Staff';
@@ -131,7 +138,9 @@ export default function DashboardPage() {
           todaySales: salesRes.data.totalSales || 0,
           totalProfit: salesRes.data.totalProfit || 0,
           productsSoldToday,
-          productsAddedToday
+          productsAddedToday,
+          myBillsToday,
+          mySalesToday
         });
 
         setSalesData(dateRangeArray.map(day => ({
@@ -267,6 +276,26 @@ export default function DashboardPage() {
         )}
 
         {user?.role === 'staff' && (
+          <Card className="border-l-4 border-l-teal-500 animate-slide-up-fade" style={{ animationDelay: '50ms' }}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">My Performance Today</CardTitle>
+              <IndianRupee className="w-4 h-4 text-teal-600" />
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight"
+                title={formatCurrencyTooltip(stats.mySalesToday)}
+              >
+                ₹{stats.mySalesToday.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                From {stats.myBillsToday} bills generated
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {user?.role === 'staff' && (
           <Card className="border-l-4 border-l-indigo-500 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Products Sold Today</CardTitle>
@@ -339,9 +368,10 @@ export default function DashboardPage() {
 
       <div className={`grid gap-6 ${user?.role === 'staff' ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
         
-        {user?.role !== 'staff' && (
           <div className="md:col-span-2 space-y-6 min-w-0">
-            <RevenueLineChart data={salesData} title="Sales Revenue (Last 7 Days)" />
+            {user?.role !== 'staff' && (
+              <RevenueLineChart data={salesData} title="Sales Revenue (Last 7 Days)" />
+            )}
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card className="cursor-pointer hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors border-teal-100 dark:border-teal-900/50" onClick={() => router.push('/billing')}>
@@ -353,6 +383,28 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
+              {user?.role === 'staff' && (
+                <Card className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-blue-100 dark:border-blue-900/50" onClick={() => router.push('/products')}>
+                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                      <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="font-medium text-sm text-center">Add Product</span>
+                  </CardContent>
+                </Card>
+              )}
+
+              {user?.role === 'staff' && (
+                <Card className="cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors border-yellow-100 dark:border-yellow-900/50" onClick={() => router.push('/expiry')}>
+                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                    <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+                      <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <span className="font-medium text-sm text-center">Check Expiry</span>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card className="cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-purple-100 dark:border-purple-900/50" onClick={() => router.push('/stock')}>
                 <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
                   <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
@@ -362,31 +414,32 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors border-orange-100 dark:border-orange-900/50" onClick={() => router.push('/vendors')}>
-                <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                  <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-                    <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                  </div>
-                  <span className="font-medium text-sm text-center">Manage Vendors</span>
-                </CardContent>
-              </Card>
+              {user?.role !== 'staff' && (
+                <Card className="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors border-orange-100 dark:border-orange-900/50" onClick={() => router.push('/vendors')}>
+                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                    <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+                      <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <span className="font-medium text-sm text-center">Manage Vendors</span>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-blue-100 dark:border-blue-900/50" onClick={() => router.push('/reports')}>
-                <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                    <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <span className="font-medium text-sm text-center">View Reports</span>
-                </CardContent>
-              </Card>
+              {user?.role !== 'staff' && (
+                <Card className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-blue-100 dark:border-blue-900/50" onClick={() => router.push('/reports')}>
+                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                      <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="font-medium text-sm text-center">View Reports</span>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
-        )}
 
         <div className="space-y-6 flex flex-col min-w-0">
-          {user?.role !== 'staff' && (
-             <TopProductsPieChart data={topProductsData} title="Top Selling Products" />
-          )}
+          <TopProductsPieChart data={topProductsData} title="Top Selling Products" />
 
           <Card>
             <CardHeader>
@@ -423,16 +476,16 @@ export default function DashboardPage() {
       </div>
 
       {/* Advanced Widgets Section */}
-      {user?.role !== 'staff' && (
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="min-w-0">
-            <CriticalStockWidget data={criticalStockData} />
-          </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="min-w-0">
+          <CriticalStockWidget data={criticalStockData} />
+        </div>
+        {user?.role !== 'staff' && (
           <div className="min-w-0">
             <StaffLeaderboard data={staffPerformanceData} />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
     </div>
   );
