@@ -35,7 +35,7 @@ export default function AddProductPage() {
   });
 
   useEffect(() => {
-    if (user?.storeId?.subscriptionPlan === 'expired') {
+    if (user?.subscriptionPlan === 'expired') {
       setShowPaywall(true);
     } else {
       api.get('/vendors').then(res => setVendors(res.data)).catch(console.error);

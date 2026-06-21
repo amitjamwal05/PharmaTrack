@@ -35,7 +35,7 @@ export default function BillingPage() {
   const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
-    if (user?.storeId?.subscriptionPlan === 'expired') {
+    if (user?.subscriptionPlan === 'expired') {
       setShowPaywall(true);
     } else {
       fetchProducts();

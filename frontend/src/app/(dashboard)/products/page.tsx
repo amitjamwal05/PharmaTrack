@@ -75,7 +75,7 @@ export default function ProductsPage() {
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   const handleAddProductClick = (e: React.MouseEvent) => {
-    const plan = user?.storeId?.subscriptionPlan;
+    const plan = user?.subscriptionPlan;
     if (user?.role !== 'superadmin') {
       if (plan === 'expired') {
         e.preventDefault();
