@@ -18,6 +18,7 @@ import { TopProductsPieChart } from '@/components/charts/TopProductsPieChart';
 import { PaymentMethodPieChart } from '@/components/charts/PaymentMethodPieChart';
 import { CriticalStockWidget } from '@/components/widgets/CriticalStockWidget';
 import { StaffLeaderboard } from '@/components/charts/StaffLeaderboard';
+import { RecentProductUpdates } from '@/components/dashboard/RecentProductUpdates';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -529,6 +530,12 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {user?.role !== 'staff' && (
+        <div className="mt-6">
+          <RecentProductUpdates />
+        </div>
+      )}
 
     </div>
   );

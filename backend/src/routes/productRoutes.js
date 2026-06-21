@@ -8,11 +8,13 @@ const {
   deleteProduct,
   getExpiringProducts,
   getLowStockProducts,
+  getRecentUpdates,
 } = require('../controllers/productController');
 const { protect } = require('../middleware/auth');
 
 router.use(protect);
 
+router.get('/recent-updates', getRecentUpdates);
 router.get('/expiring', getExpiringProducts);
 router.get('/low-stock', getLowStockProducts);
 

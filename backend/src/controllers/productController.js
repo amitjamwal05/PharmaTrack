@@ -47,6 +47,8 @@ exports.createProduct = async (req, res) => {
     const product = new Product({
       ...req.body,
       storeId: req.user.storeId,
+      createdBy: req.user._id,
+      updatedBy: req.user._id,
     });
     const createdProduct = await product.save();
 
@@ -75,7 +77,7 @@ exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findOneAndUpdate(
       { _id: req.params.id, storeId: req.user.storeId },
-      req.body,
+      { ...req.body, updatedBy: req.user._id },
       { new: true, runValidators: true }
     );
     if (!product) {
@@ -132,6 +134,23 @@ exports.getLowStockProducts = async (req, res) => {
       $expr: { $lte: ['$quantity', '$reorderLevel'] },
     }).sort('quantity');
 
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get recent product updates
+// @route   GET /api/products/recent-updates
+// @access  Private (Admin only recommended)
+exports.getRecentUpdates = async (req, res) => {
+  try {
+    const products = await Product.find({ storeId: req.user.storeId })
+      .populate('createdBy', 'name role')
+      .populate('updatedBy', 'name role')
+      .sort({ updatedAt: -1 })
+      .limit(10);
+      
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
