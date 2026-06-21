@@ -396,6 +396,20 @@ export default function ProductsPage() {
               </div>
 
             </div>
+            
+            {/* Temporary Test Button */}
+            <div className="mt-8 flex justify-center">
+              <Button 
+                variant="outline"
+                className="border-dashed border-2 border-teal-500 text-teal-600 hover:bg-teal-50"
+                onClick={(e) => { e.stopPropagation(); handlePayment('test'); }}
+                disabled={processingPlan !== null}
+              >
+                {processingPlan === 'test' ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                Run ₹1 Test Payment
+              </Button>
+            </div>
+
           </div>
         </div>
       )}

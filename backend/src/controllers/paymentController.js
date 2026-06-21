@@ -25,6 +25,7 @@ exports.createOrder = async (req, res) => {
     if (planId === 'monthly') amount = 3999;
     else if (planId === 'quarterly') amount = 8999;
     else if (planId === 'annually') amount = 19999;
+    else if (planId === 'test') amount = 1; // 1 INR for testing
     else return res.status(400).json({ message: 'Invalid plan selected' });
 
     if (!razorpay) {
@@ -89,11 +90,13 @@ exports.verifyOrder = async (req, res) => {
       
       const expiryDate = new Date();
       if (planId === 'monthly') {
-        expiryDate.setMonth(expiryDate.getMonth() + 1);
+        store.subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       } else if (planId === 'quarterly') {
-        expiryDate.setMonth(expiryDate.getMonth() + 3);
+        store.subscriptionExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
       } else if (planId === 'annually') {
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        store.subscriptionExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      } else if (planId === 'test') {
+        store.subscriptionExpiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day for test
       }
       
       store.subscriptionExpiry = expiryDate;
@@ -103,6 +106,7 @@ exports.verifyOrder = async (req, res) => {
       if (planId === 'monthly') amountPaid = 3999;
       else if (planId === 'quarterly') amountPaid = 8999;
       else if (planId === 'annually') amountPaid = 19999;
+      else if (planId === 'test') amountPaid = 1;
 
       await Payment.create({
         storeId: store._id,
