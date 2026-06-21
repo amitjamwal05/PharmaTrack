@@ -61,20 +61,21 @@ export default function ProductsPage() {
         description: `Subscription for ${planId} plan`,
         order_id: data.order_id,
         handler: async function (response: any) {
-          toast.success("Payment completed! Verifying...");
-          try {
-            await api.post('/payments/verify', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              planId
-            });
-            toast.success("Subscription updated successfully!");
+          const verifyPromise = api.post('/payments/verify', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            planId
+          }).then(async () => {
             setShowPaywall(false);
             if (refreshUser) await refreshUser();
-          } catch (err) {
-            toast.error("Payment verification failed");
-          }
+          });
+
+          toast.promise(verifyPromise, {
+            loading: 'Payment completed! Verifying...',
+            success: 'Subscription updated successfully!',
+            error: 'Payment verification failed'
+          });
         },
         prefill: {
           name: user?.name || "Store Owner",
