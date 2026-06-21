@@ -27,6 +27,8 @@ exports.getProduct = async (req, res) => {
   }
 };
 
+const StockHistory = require('../models/StockHistory');
+
 // @desc    Create product
 // @route   POST /api/products
 // @access  Private
@@ -47,6 +49,19 @@ exports.createProduct = async (req, res) => {
       storeId: req.user.storeId,
     });
     const createdProduct = await product.save();
+
+    // Log initial stock if quantity is greater than 0
+    if (createdProduct.stock > 0) {
+      await StockHistory.create({
+        storeId: req.user.storeId,
+        productId: createdProduct._id,
+        quantityChange: createdProduct.stock,
+        reason: 'restock', // using 'restock' so dashboard picks it up
+        notes: 'Initial stock on product creation',
+        performedBy: req.user._id,
+      });
+    }
+
     res.status(201).json(createdProduct);
   } catch (error) {
     res.status(500).json({ message: error.message });

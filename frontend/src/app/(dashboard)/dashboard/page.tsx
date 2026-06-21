@@ -262,18 +262,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {user?.role === 'staff' && (
-          <Card className="border-l-4 border-l-green-500 animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Products Added Today</CardTitle>
-              <PlusCircle className="w-4 h-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.productsAddedToday}</div>
-              <p className="text-xs text-muted-foreground mt-1">Units added to stock</p>
-            </CardContent>
-          </Card>
-        )}
+
 
         <Card className="border-l-4 border-l-blue-500 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors animate-slide-up-fade" style={{ animationDelay: '300ms' }} onClick={() => router.push('/products')}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -316,6 +305,17 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.expired}</div>
             <p className="text-xs text-muted-foreground mt-1">Needs disposal/return</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-emerald-500 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-colors animate-slide-up-fade" style={{ animationDelay: '500ms' }} onClick={() => router.push('/products')}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">New Products Today</CardTitle>
+            <PackagePlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.productsAddedToday}</div>
+            <p className="text-xs text-muted-foreground mt-1">Units added to stock today</p>
           </CardContent>
         </Card>
       </div>
