@@ -73,7 +73,7 @@ exports.createBill = async (req, res) => {
       await Product.updateOne(
         { _id: product._id },
         { $inc: { quantity: -item.quantity } },
-        { runValidators: false }
+        { runValidators: false, timestamps: false }
       );
 
       // Record stock history but we need billId, we'll do it after bill creation
