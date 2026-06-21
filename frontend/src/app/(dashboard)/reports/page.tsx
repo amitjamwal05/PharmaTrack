@@ -179,10 +179,13 @@ export default function ReportsPage() {
             <DollarSign className="w-4 h-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">
-              ₹{salesReport?.totalRevenue?.toFixed(2) || '0.00'}
+            <div 
+              className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-foreground truncate tracking-tight"
+              title={`₹${salesReport?.totalRevenue?.toFixed(2) || '0.00'}`}
+            >
+              ₹{salesReport?.totalRevenue?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">For selected period</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">For selected period</p>
           </CardContent>
         </Card>
 
@@ -192,10 +195,13 @@ export default function ReportsPage() {
             <TrendingUp className="w-4 h-4 text-teal-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">
-              ₹{salesReport?.totalProfit?.toFixed(2) || '0.00'}
+            <div 
+              className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-teal-600 dark:text-teal-400 truncate tracking-tight"
+              title={`₹${salesReport?.totalProfit?.toFixed(2) || '0.00'}`}
+            >
+              ₹{salesReport?.totalProfit?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Gross profit after costs</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">Gross profit after costs</p>
           </CardContent>
         </Card>
 
@@ -205,10 +211,13 @@ export default function ReportsPage() {
             <FileText className="w-4 h-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">
-              {salesReport?.totalBills || 0}
+            <div 
+              className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-foreground truncate tracking-tight"
+              title={String(salesReport?.totalBills || 0)}
+            >
+              {(salesReport?.totalBills || 0).toLocaleString('en-IN')}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">For selected period</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">For selected period</p>
           </CardContent>
         </Card>
 
@@ -218,10 +227,13 @@ export default function ReportsPage() {
             <TrendingUp className="w-4 h-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">
-              ₹{stockValue?.totalInventoryValue?.toFixed(2) || '0.00'}
+            <div 
+              className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-foreground truncate tracking-tight"
+              title={`₹${stockValue?.totalInventoryValue?.toFixed(2) || '0.00'}`}
+            >
+              ₹{stockValue?.totalInventoryValue?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Total inventory at cost</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">Total inventory at cost</p>
           </CardContent>
         </Card>
       </div>

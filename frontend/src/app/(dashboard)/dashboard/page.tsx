@@ -211,7 +211,12 @@ export default function DashboardPage() {
               <IndianRupee className="w-4 h-4 text-teal-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹{stats.todaySales.toFixed(2)}</div>
+              <div 
+                className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight"
+                title={`₹${stats.todaySales.toFixed(2)}`}
+              >
+                ₹{stats.todaySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {stats.productsSoldToday} products sold
               </p>
@@ -228,8 +233,11 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                ₹{stats.totalProfit.toFixed(2)}
+              <div 
+                className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold text-green-700 dark:text-green-400 truncate tracking-tight"
+                title={`₹${stats.totalProfit.toFixed(2)}`}
+              >
+                ₹{stats.totalProfit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
                 Net margin on sales
@@ -245,7 +253,12 @@ export default function DashboardPage() {
               <Wallet className="w-4 h-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹{stats.currentStockValue.toFixed(2)}</div>
+              <div 
+                className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-bold truncate tracking-tight"
+                title={`₹${stats.currentStockValue.toFixed(2)}`}
+              >
+                ₹{stats.currentStockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">Total inventory value</p>
             </CardContent>
           </Card>
