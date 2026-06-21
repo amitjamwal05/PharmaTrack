@@ -37,6 +37,12 @@ export default function BillingPage() {
   useEffect(() => {
     if (user?.subscriptionPlan === 'expired') {
       setShowPaywall(true);
+    } else if (user?.role !== 'superadmin' && (!user?.subscriptionPlan || user?.subscriptionPlan === 'free' || user?.subscriptionPlan === 'pending')) {
+      api.get('/bills').then(res => {
+        if (res.data && res.data.length >= 5) {
+          setShowPaywall(true);
+        }
+      }).catch(console.error);
     }
   }, [user]);
 
@@ -145,7 +151,11 @@ export default function BillingPage() {
       // Refresh products to get updated stock
       fetchProducts();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to create bill');
+      if (error.response?.data?.message === 'PAYWALL_TRIGGERED') {
+        setShowPaywall(true);
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to create bill');
+      }
     } finally {
       setIsSubmitting(false);
     }
