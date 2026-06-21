@@ -112,11 +112,13 @@ export default function DashboardPage() {
         setRecentBills(sortedBills.slice(0, 5));
 
         let productsAddedToday = 0;
-        historyRes.data.forEach((history: any) => {
-          if (format(new Date(history.createdAt), 'yyyy-MM-dd') === todayStr && history.reason === 'restock') {
-            productsAddedToday += history.quantityChange;
-          }
-        });
+        if (stockRes.data && stockRes.data.products) {
+          stockRes.data.products.forEach((product: any) => {
+            if (product.createdAt && format(new Date(product.createdAt), 'yyyy-MM-dd') === todayStr) {
+              productsAddedToday++;
+            }
+          });
+        }
 
         setStats({
           totalProducts: stockRes.data.totalProducts || stockRes.data.totalUniqueProducts || 0,
@@ -315,7 +317,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.productsAddedToday}</div>
-            <p className="text-xs text-muted-foreground mt-1">Units added to stock today</p>
+            <p className="text-xs text-muted-foreground mt-1">Products created today</p>
           </CardContent>
         </Card>
       </div>
