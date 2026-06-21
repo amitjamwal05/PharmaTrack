@@ -4,10 +4,15 @@ const Store = require('../models/Store');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+} else {
+  console.warn('⚠️ Warning: RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing. Payment features will fail.');
+}
 
 // @desc    Create Razorpay Order
 // @route   POST /api/payments/create-order
@@ -22,9 +27,13 @@ exports.createOrder = async (req, res) => {
     else if (planId === 'annually') amount = 19999;
     else return res.status(400).json({ message: 'Invalid plan selected' });
 
+    if (!razorpay) {
+      return res.status(500).json({ message: 'Payment gateway is not configured on the server. Please add Razorpay keys to environment variables.' });
+    }
+
     const user = await User.findById(req.user.id).populate('storeId');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!user || !user.storeId) {
+      return res.status(404).json({ message: 'Store not found' });
     }
 
     const options = {
@@ -60,6 +69,10 @@ exports.verifyOrder = async (req, res) => {
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !planId) {
       return res.status(400).json({ message: 'Missing required parameters' });
+    }
+
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ message: 'Payment gateway is not configured on the server. Please add Razorpay keys to environment variables.' });
     }
 
     // Verify signature
