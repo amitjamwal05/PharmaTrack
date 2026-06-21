@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface PaymentHistoryTableProps {
   payments: any[];
@@ -61,8 +61,16 @@ export function PaymentHistoryTable({ payments, loading }: PaymentHistoryTablePr
             placeholder="Search payments..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="pl-9"
+            className="pl-9 pr-9"
           />
+          {searchTerm && (
+            <button
+              onClick={() => { setSearchTerm(''); setCurrentPage(1); }}
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
