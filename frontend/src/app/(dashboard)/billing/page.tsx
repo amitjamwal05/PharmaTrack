@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import Receipt from '@/components/billing/Receipt';
 import ProductSearch from '@/components/billing/ProductSearch';
+import { PaywallModal } from '@/components/dashboard/PaywallModal';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -31,10 +32,15 @@ export default function BillingPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedBill, setCompletedBill] = useState<any>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (user?.storeId?.subscriptionPlan === 'expired') {
+      setShowPaywall(true);
+    } else {
+      fetchProducts();
+    }
+  }, [user]);
 
   const fetchProducts = async () => {
     try {

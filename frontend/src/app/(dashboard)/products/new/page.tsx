@@ -8,10 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
+import { PaywallModal } from '@/components/dashboard/PaywallModal';
 
 export default function AddProductPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [vendors, setVendors] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     productName: '',
@@ -31,8 +35,12 @@ export default function AddProductPage() {
   });
 
   useEffect(() => {
-    api.get('/vendors').then(res => setVendors(res.data)).catch(console.error);
-  }, []);
+    if (user?.storeId?.subscriptionPlan === 'expired') {
+      setShowPaywall(true);
+    } else {
+      api.get('/vendors').then(res => setVendors(res.data)).catch(console.error);
+    }
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -54,17 +62,25 @@ export default function AddProductPage() {
       router.push('/products');
     } catch (error: any) {
       console.error('Error adding product:', error);
-      if (error.response?.data?.message === 'PAYWALL_LIMIT_REACHED') {
-        alert('Free plan limit reached! You can only add 1 product for free. Please upgrade your plan.');
+      if (error.response?.data?.message === 'PAYWALL_LIMIT_REACHED' || error.response?.data?.message === 'SUBSCRIPTION_EXPIRED') {
+        setShowPaywall(true);
       } else {
         alert('Failed to add product.');
       }
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      {showPaywall && (
+        <PaywallModal 
+          message="Your Subscription Has Expired" 
+          preventClose={true} 
+          onClose={() => {}} 
+        />
+      )}
       <div className="flex items-center space-x-4">
         <Link href="/products">
           <Button variant="outline" size="icon">

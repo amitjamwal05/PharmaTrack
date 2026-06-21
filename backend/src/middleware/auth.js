@@ -13,11 +13,18 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      req.user = await User.findById(decoded.id).select('-password').populate('storeId', 'name subscriptionPlan');
+      req.user = await User.findById(decoded.id).select('-password').populate('storeId', 'name subscriptionPlan subscriptionExpiry');
       
       const settings = await SystemSettings.findOne();
       if (settings && settings.maintenanceMode && req.user.role !== 'superadmin') {
         return res.status(503).json({ message: 'MAINTENANCE_MODE' });
+      }
+
+      // Automatically flag as expired if the expiry date has passed
+      if (req.user.storeId && req.user.storeId.subscriptionExpiry) {
+        if (new Date() > new Date(req.user.storeId.subscriptionExpiry)) {
+          req.user.storeId.subscriptionPlan = 'expired';
+        }
       }
 
       next();

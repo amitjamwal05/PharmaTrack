@@ -90,13 +90,13 @@ exports.verifyOrder = async (req, res) => {
       
       const expiryDate = new Date();
       if (planId === 'monthly') {
-        store.subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
       } else if (planId === 'quarterly') {
-        store.subscriptionExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+        expiryDate.setMonth(expiryDate.getMonth() + 3);
       } else if (planId === 'annually') {
-        store.subscriptionExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       } else if (planId === 'test') {
-        store.subscriptionExpiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day for test
+        expiryDate.setDate(expiryDate.getDate() + 1); // 1 day for test
       }
       
       store.subscriptionExpiry = expiryDate;
