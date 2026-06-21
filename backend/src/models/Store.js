@@ -20,7 +20,7 @@ const storeSchema = new mongoose.Schema(
     },
     subscriptionPlan: {
       type: String,
-      enum: ['free', 'basic', 'pro'],
+      enum: ['free', 'monthly', 'quarterly', 'annually'],
       default: 'free',
     },
     subscriptionExpiry: {

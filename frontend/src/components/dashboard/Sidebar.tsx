@@ -12,7 +12,8 @@ import {
   Users,
   Truck,
   BarChart3,
-  Activity
+  Activity,
+  Database
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Vendors', href: '/vendors', icon: Truck },
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Super Admin', href: '/superadmin', icon: Users },
+  { name: 'Platform Data', href: '/platform-data', icon: Database },
 ];
 
 export default function Sidebar() {
@@ -34,13 +36,13 @@ export default function Sidebar() {
 
   const filteredNavigation = navigation.filter(item => {
     if (user?.role === 'staff') {
-      return !['Reports', 'Settings', 'Super Admin', 'Vendors'].includes(item.name);
+      return !['Reports', 'Settings', 'Super Admin', 'Platform Data', 'Vendors'].includes(item.name);
     }
     if (user?.role === 'admin' || user?.role === 'manager') {
-      return item.name !== 'Super Admin';
+      return !['Super Admin', 'Platform Data'].includes(item.name);
     }
     if (user?.role === 'superadmin') {
-      return ['Super Admin', 'Settings'].includes(item.name);
+      return ['Super Admin', 'Platform Data', 'Settings'].includes(item.name);
     }
   });
 

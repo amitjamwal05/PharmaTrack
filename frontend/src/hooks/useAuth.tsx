@@ -101,8 +101,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push('/login');
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      if (res.data) {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const freshUser = {
+          ...storedUser,
+          ...res.data,
+          storeId: res.data.storeId?._id || res.data.storeId || storedUser.storeId,
+          storeName: res.data.storeId?.name || storedUser.storeName,
+          subscriptionPlan: res.data.storeId?.subscriptionPlan || storedUser.subscriptionPlan
+        };
+        setUser(freshUser);
+        localStorage.setItem('user', JSON.stringify(freshUser));
+      }
+    } catch (error) {
+      console.error('Failed to refresh user', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, sendOtp }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, sendOtp, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

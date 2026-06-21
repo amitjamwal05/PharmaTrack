@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Bill = require('../models/Bill');
 const SystemSettings = require('../models/SystemSettings');
+const Payment = require('../models/Payment');
 
 // @desc    Get all stores with stats
 // @route   GET /api/superadmin/stores
@@ -25,6 +26,20 @@ exports.getAllStores = async (req, res) => {
     }));
 
     res.status(200).json(storesWithStats);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all payments history
+// @route   GET /api/superadmin/payments
+// @access  Private/SuperAdmin
+exports.getPaymentsHistory = async (req, res) => {
+  try {
+    const payments = await Payment.find()
+      .populate('storeId', 'name adminName adminEmail phone')
+      .sort({ createdAt: -1 });
+    res.status(200).json(payments);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

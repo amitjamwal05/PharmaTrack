@@ -6,13 +6,13 @@ import { Key, Trash2, Edit3 } from 'lucide-react';
 interface StoreListTableProps {
   stores: any[];
   loading: boolean;
-  onUpdatePlan: (id: string, plan: string) => void;
+  onOpenPlanModal: (storeId: string, storeName: string, newPlan: string) => void;
   onOpenResetModal: (id: string, name: string) => void;
   onDeleteStore: (id: string, name: string) => void;
   onOpenEditModal: (store: any) => void;
 }
 
-export function StoreListTable({ stores, loading, onUpdatePlan, onOpenResetModal, onDeleteStore, onOpenEditModal }: StoreListTableProps) {
+export function StoreListTable({ stores, loading, onOpenPlanModal, onOpenResetModal, onDeleteStore, onOpenEditModal }: StoreListTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -58,7 +58,7 @@ export function StoreListTable({ stores, loading, onUpdatePlan, onOpenResetModal
                       <select 
                         className="px-2 py-1 bg-teal-50 dark:bg-teal-900 border border-teal-200 dark:border-teal-700 text-teal-800 dark:text-teal-300 rounded-md text-xs font-semibold uppercase cursor-pointer outline-none focus:ring-2 focus:ring-teal-500"
                         value={store.subscriptionPlan || 'free'}
-                        onChange={(e) => onUpdatePlan(store._id, e.target.value)}
+                        onChange={(e) => onOpenPlanModal(store._id, store.name, e.target.value)}
                         title="Change Plan"
                       >
                         <option value="free">FREE (Pending)</option>

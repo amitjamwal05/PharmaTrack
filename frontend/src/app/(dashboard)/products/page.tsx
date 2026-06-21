@@ -16,15 +16,90 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Plus, Search, Trash2, Edit, PackageSearch } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, PackageSearch, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async (planId: string) => {
+    try {
+      setProcessingPlan(planId);
+      
+      const res = await loadRazorpay();
+      if (!res) {
+        toast.error('Razorpay SDK failed to load');
+        setProcessingPlan(null);
+        return;
+      }
+      
+      // 1. Create order on backend
+      const { data } = await api.post('/payments/create-order', { planId });
+      
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_T4A7frxFe07CHZ', 
+        amount: data.amount,
+        currency: data.currency,
+        name: "PharmaTrack",
+        description: `Subscription for ${planId} plan`,
+        order_id: data.order_id,
+        handler: async function (response: any) {
+          toast.success("Payment completed! Verifying...");
+          try {
+            await api.post('/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              planId
+            });
+            toast.success("Subscription updated successfully!");
+            setShowPaywall(false);
+            if (refreshUser) await refreshUser();
+          } catch (err) {
+            toast.error("Payment verification failed");
+          }
+        },
+        prefill: {
+          name: user?.name || "Store Owner",
+          email: user?.email,
+          contact: user?.storeId?.phone || "9999999999"
+        },
+        theme: {
+          color: "#0d9488"
+        }
+      };
+      
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.on('payment.failed', function (response: any) {
+        toast.error(response.error.description || "Payment failed");
+      });
+      rzp1.open();
+      
+    } catch (error: any) {
+      console.error('Payment error:', error.response?.data || error);
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to process payment';
+      toast.error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    } finally {
+      setProcessingPlan(null);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -241,58 +316,84 @@ export default function ProductsPage() {
               <p className="text-muted-foreground text-lg">Your store is currently pending approval. Choose a plan below to unlock full inventory management.</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="grid lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-4">
+
               {/* Monthly */}
-              <div className="border border-border bg-background rounded-xl p-6 flex flex-col hover:border-teal-500 transition-colors">
-                <h3 className="text-xl font-bold mb-2">Monthly</h3>
-                <div className="text-3xl font-extrabold text-teal-600 mb-4">₹999<span className="text-sm text-muted-foreground font-normal">/mo</span></div>
-                <ul className="space-y-2 mb-6 flex-1 text-sm text-muted-foreground">
-                  <li>✓ Unlimited Products</li>
-                  <li>✓ Basic Reporting</li>
-                  <li>✓ Email Support</li>
+              <div 
+                onClick={() => setSelectedPlan('monthly')}
+                className={`border rounded-xl p-8 flex flex-col transition-all cursor-pointer ${selectedPlan === 'monthly' ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20 transform md:-translate-y-4 shadow-xl' : 'border-border bg-background hover:border-teal-500 shadow-sm hover:shadow-md'}`}
+              >
+                <h3 className="text-2xl font-bold mb-2">Monthly</h3>
+                <div className="text-4xl font-extrabold text-teal-600 mb-6">₹3,999<span className="text-sm text-muted-foreground font-normal">/mo</span></div>
+                <ul className="space-y-3 mb-8 flex-1 text-base text-muted-foreground">
+                  <li className="flex items-center gap-2">✓ <span>Unlimited Products</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Advanced Analytics</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Custom Reports</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Priority Support</span></li>
                 </ul>
+                <Button 
+                  className="w-full bg-teal-600 hover:bg-teal-700 h-12 text-lg" 
+                  onClick={(e) => { e.stopPropagation(); handlePayment('monthly'); }}
+                  disabled={processingPlan !== null}
+                >
+                  {processingPlan === 'monthly' ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                  Pay Monthly
+                </Button>
               </div>
               
               {/* Quarterly */}
-              <div className="border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20 rounded-xl p-6 flex flex-col relative transform scale-105 shadow-xl">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                  Recommended
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-teal-900 dark:text-teal-100">Quarterly</h3>
-                <div className="text-3xl font-extrabold text-teal-600 mb-4">₹2,499<span className="text-sm text-teal-700/70 dark:text-teal-400/70 font-normal">/qtr</span></div>
-                <ul className="space-y-2 mb-6 flex-1 text-sm text-teal-800 dark:text-teal-300">
-                  <li>✓ Unlimited Products</li>
-                  <li>✓ Advanced Analytics</li>
-                  <li>✓ Priority Support</li>
-                  <li>✓ Save ~16%</li>
+              <div 
+                onClick={() => setSelectedPlan('quarterly')}
+                className={`border rounded-xl p-8 flex flex-col relative transition-all cursor-pointer ${selectedPlan === 'quarterly' ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20 transform md:-translate-y-4 shadow-xl' : 'border-border bg-background hover:border-teal-500 shadow-sm hover:shadow-md'}`}
+              >
+                <h3 className="text-2xl font-bold mb-2 text-teal-900 dark:text-teal-100">Quarterly</h3>
+                <div className="text-4xl font-extrabold text-teal-600 mb-6">₹8,999<span className="text-sm text-teal-700/70 dark:text-teal-400/70 font-normal">/qtr</span></div>
+                <ul className="space-y-3 mb-8 flex-1 text-base text-teal-800 dark:text-teal-300">
+                  <li className="flex items-center gap-2">✓ <span>Unlimited Products</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Advanced Analytics</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Custom Reports</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Priority Support</span></li>
+                  <li className="flex items-center gap-2 font-semibold">✓ <span>Save ₹2,998/qtr</span></li>
                 </ul>
+                <Button 
+                  className="w-full bg-teal-600 hover:bg-teal-700 h-12 text-lg shadow-lg" 
+                  onClick={(e) => { e.stopPropagation(); handlePayment('quarterly'); }}
+                  disabled={processingPlan !== null}
+                >
+                  {processingPlan === 'quarterly' ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                  Pay Quarterly
+                </Button>
               </div>
 
               {/* Annually */}
-              <div className="border border-border bg-background rounded-xl p-6 flex flex-col hover:border-teal-500 transition-colors">
-                <h3 className="text-xl font-bold mb-2">Annually</h3>
-                <div className="text-3xl font-extrabold text-teal-600 mb-4">₹8,999<span className="text-sm text-muted-foreground font-normal">/yr</span></div>
-                <ul className="space-y-2 mb-6 flex-1 text-sm text-muted-foreground">
-                  <li>✓ Unlimited Products</li>
-                  <li>✓ Custom Reports</li>
-                  <li>✓ 24/7 Phone Support</li>
-                  <li>✓ Save ~25%</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-muted p-6 rounded-xl text-center border border-border">
-              <h4 className="font-semibold text-lg mb-2">Ready to subscribe?</h4>
-              <p className="text-muted-foreground mb-4">
-                Please drop an email to discuss your preferred plan and complete the payment. 
-                Once payment is received, your store will be instantly approved by our Super Admin.
-              </p>
-              <a 
-                href="mailto:amitjamwal005@gmail.com?subject=PharmaTrack%20Subscription%20Plan" 
-                className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm transition-all"
+              <div 
+                onClick={() => setSelectedPlan('annually')}
+                className={`border rounded-xl p-8 flex flex-col relative transition-all cursor-pointer ${selectedPlan === 'annually' ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20 transform md:-translate-y-4 shadow-xl' : 'border-border bg-background hover:border-teal-500 shadow-sm hover:shadow-md'}`}
               >
-                Contact: amitjamwal005@gmail.com
-              </a>
+                {selectedPlan === 'annually' && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Best Value
+                  </div>
+                )}
+                <h3 className="text-2xl font-bold mb-2 text-teal-900 dark:text-teal-100">Annually</h3>
+                <div className="text-4xl font-extrabold text-teal-600 mb-6">₹19,999<span className="text-sm text-teal-700/70 dark:text-teal-400/70 font-normal">/yr</span></div>
+                <ul className="space-y-3 mb-8 flex-1 text-base text-teal-800 dark:text-teal-300">
+                  <li className="flex items-center gap-2">✓ <span>Unlimited Products</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Advanced Analytics</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Custom Reports</span></li>
+                  <li className="flex items-center gap-2">✓ <span>Priority Support</span></li>
+                  <li className="flex items-center gap-2 font-semibold">✓ <span>Save ₹27,989/yr</span></li>
+                </ul>
+                <Button 
+                  className="w-full bg-teal-600 hover:bg-teal-700 h-12 text-lg shadow-lg" 
+                  onClick={(e) => { e.stopPropagation(); handlePayment('annually'); }}
+                  disabled={processingPlan !== null}
+                >
+                  {processingPlan === 'annually' ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                  Pay Annually
+                </Button>
+              </div>
+
             </div>
           </div>
         </div>

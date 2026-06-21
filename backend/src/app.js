@@ -27,6 +27,7 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/superadmin', require('./routes/superadminRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/vendors', require('./routes/vendorRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
 
 // Basic route
 app.get('/', (req, res) => {

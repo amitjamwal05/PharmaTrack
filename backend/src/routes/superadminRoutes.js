@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getAllStores, updateStoreStatus, deleteStore, resetAdminPassword, getDashboardStats, updateStoreDetails, getSystemSettings, updateMaintenanceMode, updateSmtpConfig, testSmtpConfig, getDatabaseBackup } = require('../controllers/superadminController');
+const { getAllStores, updateStoreStatus, deleteStore, resetAdminPassword, getDashboardStats, updateStoreDetails, getSystemSettings, updateMaintenanceMode, updateSmtpConfig, testSmtpConfig, getDatabaseBackup, getPaymentsHistory } = require('../controllers/superadminController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.get('/stores', protect, authorize('superadmin'), getAllStores);
 router.get('/dashboard-stats', protect, authorize('superadmin'), getDashboardStats);
+router.get('/payments', protect, authorize('superadmin'), getPaymentsHistory);
 router.put('/stores/:id/status', protect, authorize('superadmin'), updateStoreStatus);
 router.put('/stores/:id', protect, authorize('superadmin'), updateStoreDetails);
 router.delete('/stores/:id', protect, authorize('superadmin'), deleteStore);
