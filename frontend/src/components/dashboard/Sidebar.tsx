@@ -47,12 +47,12 @@ export default function Sidebar() {
   });
 
   return (
-    <div className="flex flex-col w-full md:w-64 h-full bg-slate-900 text-white shadow-xl">
-      <div className="flex items-center justify-center h-16 border-b border-slate-700 space-x-3">
-        <div className="bg-white/10 p-1.5 rounded-xl border border-white/20 shadow-sm">
-          <Activity className="w-6 h-6 text-teal-400" />
+    <div className="flex flex-col w-full md:w-64 h-full bg-card border-r border-border text-card-foreground shadow-xl">
+      <div className="flex items-center justify-center h-16 border-b border-border space-x-3">
+        <div className="bg-teal-100 dark:bg-teal-900/30 p-1.5 rounded-xl border border-teal-200 dark:border-teal-800 shadow-sm">
+          <Activity className="w-6 h-6 text-teal-600 dark:text-teal-400" />
         </div>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Pharma<span className="text-teal-400">Track</span></h1>
+        <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Pharma<span className="text-teal-600 dark:text-teal-400">Track</span></h1>
       </div>
       <div className="flex-1 overflow-y-auto">
         <nav className="px-2 py-4 space-y-1">
@@ -64,8 +64,8 @@ export default function Sidebar() {
                 href={item.href}
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-teal-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-teal-600 text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
                 <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
