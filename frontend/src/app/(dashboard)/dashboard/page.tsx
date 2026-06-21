@@ -28,6 +28,7 @@ export default function DashboardPage() {
     expired: 0,
     currentStockValue: 0,
     todaySales: 0,
+    totalProfit: 0,
     productsSoldToday: 0,
     productsAddedToday: 0,
     myBillsToday: 0,
