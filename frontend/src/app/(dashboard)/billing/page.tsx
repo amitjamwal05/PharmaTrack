@@ -388,8 +388,9 @@ export default function BillingPage() {
             </CardContent>
           </Card>
         </div>
-
       </div>
+
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
     </div>
   );
 }
