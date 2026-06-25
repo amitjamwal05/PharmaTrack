@@ -8,11 +8,15 @@ const {
   getStaff,
   deleteStaff,
   resetStaffPassword,
-  sendOtp
+  sendOtp,
+  forgotPassword,
+  resetPassword
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.post('/send-otp', sendOtp);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/me', protect, getMe);

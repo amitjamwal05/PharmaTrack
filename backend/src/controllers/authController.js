@@ -277,3 +277,77 @@ exports.sendOtp = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Initiate forgot password flow
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const userExists = await User.findOne({ email });
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found with this email' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await Otp.deleteMany({ email });
+    await Otp.create({ email, otp });
+
+    const settings = await SystemSettings.findOne();
+    const fromEmail = (settings && settings.smtpConfig && settings.smtpConfig.user) ? settings.smtpConfig.user : process.env.EMAIL_USER;
+
+    const mailOptions = {
+      from: `"PharmaTrack Support" <${fromEmail}>`,
+      to: email,
+      subject: 'Password Reset Request',
+      text: `Your password reset code is: ${otp}. It will expire in 10 minutes.`,
+      html: `<p>You requested a password reset.</p><p>Your verification code is: <strong style="font-size: 24px;">${otp}</strong></p><p>It will expire in 10 minutes.</p>`,
+    };
+
+    const transporter = await getTransporter();
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Reset code sent to email' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Reset password using OTP
+// @route   POST /api/auth/reset-password
+// @access  Public
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: 'Please provide email, OTP, and new password' });
+    }
+
+    const validOtp = await Otp.findOne({ email, otp });
+    if (!validOtp) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    await Otp.deleteMany({ email });
+
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

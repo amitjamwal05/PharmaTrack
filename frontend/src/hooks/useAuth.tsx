@@ -95,6 +95,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    try {
+      await api.post('/auth/forgot-password', { email });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to send reset code',
+      };
+    }
+  };
+
+  const resetPassword = async (data: any) => {
+    try {
+      await api.post('/auth/reset-password', data);
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to reset password',
+      };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('user');
     setUser(null);
@@ -122,7 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, sendOtp, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, sendOtp, forgotPassword, resetPassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
