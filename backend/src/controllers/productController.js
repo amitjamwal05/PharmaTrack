@@ -36,12 +36,8 @@ exports.createProduct = async (req, res) => {
   try {
     const storePlan = req.user.storeId?.subscriptionPlan;
     
-    // Limit free plan to exactly 1 product
-    if (!storePlan || storePlan === 'free' || storePlan === 'pending') {
-      const productCount = await Product.countDocuments({ storeId: req.user.storeId });
-      if (productCount >= 1) {
-        return res.status(403).json({ message: 'PAYWALL_LIMIT_REACHED' });
-      }
+    if (storePlan === 'expired') {
+      return res.status(403).json({ message: 'PAYWALL_TRIGGERED' });
     }
 
     const product = new Product({

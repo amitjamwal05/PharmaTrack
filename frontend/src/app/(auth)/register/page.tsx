@@ -25,7 +25,11 @@ export default function RegisterPage() {
   const { register, sendOtp } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let value = e.target.value;
+    if (e.target.name === 'phone') {
+      value = value.replace(/\D/g, '').slice(0, 10);
+    }
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -196,9 +200,12 @@ export default function RegisterPage() {
                     <Input
                       type="tel"
                       name="phone"
-                      placeholder="+91 XXXXXXX"
+                      placeholder="9876543210"
                       value={formData.phone}
                       onChange={handleChange}
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                      title="Please enter a valid 10-digit mobile number"
                       className="h-11 bg-muted/50 border-transparent focus:bg-background focus:border-teal-500 focus:ring-teal-500 transition-all shadow-sm"
                     />
                   </div>

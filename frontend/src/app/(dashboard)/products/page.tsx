@@ -80,12 +80,6 @@ export default function ProductsPage() {
       if (plan === 'expired') {
         e.preventDefault();
         setShowPaywall(true);
-      } else if (!plan || plan === 'free' || plan === 'pending') {
-        // Allow exactly 1 free product
-        if (products.length >= 1) {
-          e.preventDefault();
-          setShowPaywall(true);
-        }
       }
     }
   };

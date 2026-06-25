@@ -62,6 +62,7 @@ exports.registerUser = async (req, res) => {
     const store = await Store.create({
       name: storeName,
       phone,
+      subscriptionExpiry: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
     });
 
     // Hash password

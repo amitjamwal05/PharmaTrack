@@ -21,13 +21,6 @@ exports.createBill = async (req, res) => {
       return res.status(403).json({ message: 'PAYWALL_TRIGGERED' });
     }
 
-    if (!storePlan || storePlan === 'free' || storePlan === 'pending') {
-      const billCount = await Bill.countDocuments({ storeId: req.user.storeId });
-      if (billCount >= 5) {
-        return res.status(403).json({ message: 'PAYWALL_TRIGGERED' });
-      }
-    }
-
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No items in bill' });
     }

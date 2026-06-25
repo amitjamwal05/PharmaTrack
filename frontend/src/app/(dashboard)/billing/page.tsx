@@ -37,12 +37,6 @@ export default function BillingPage() {
   useEffect(() => {
     if (user?.subscriptionPlan === 'expired') {
       setShowPaywall(true);
-    } else if (user?.role !== 'superadmin' && (!user?.subscriptionPlan || user?.subscriptionPlan === 'free' || user?.subscriptionPlan === 'pending')) {
-      api.get('/bills').then(res => {
-        if (res.data && res.data.length >= 5) {
-          setShowPaywall(true);
-        }
-      }).catch(console.error);
     }
   }, [user]);
 
