@@ -13,6 +13,7 @@ import { RevenueLineChart } from '@/components/charts/RevenueLineChart';
 import { formatCurrencyTooltip } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { TopProductsPieChart } from '@/components/charts/TopProductsPieChart';
 import { PaymentMethodPieChart } from '@/components/charts/PaymentMethodPieChart';
@@ -228,6 +229,50 @@ export default function DashboardPage() {
         </Select>
       </div>
 
+      {/* Quick Actions Command Center */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Link href="/billing" className="group">
+          <Card className="h-full border border-teal-100 dark:border-teal-900 bg-teal-50/50 dark:bg-teal-900/20 hover:bg-teal-100/50 dark:hover:bg-teal-900/40 transition-colors shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="font-semibold text-teal-900 dark:text-teal-100">New Bill</div>
+              <div className="bg-teal-100 dark:bg-teal-800 p-2 rounded-full group-hover:scale-110 transition-transform">
+                <ShoppingCart className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/products/new" className="group">
+          <Card className="h-full border border-blue-100 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/40 transition-colors shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="font-semibold text-blue-900 dark:text-blue-100">Add Product</div>
+              <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full group-hover:scale-110 transition-transform">
+                <PackagePlus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/expiry" className="group">
+          <Card className="h-full border border-orange-100 dark:border-orange-900 bg-orange-50/50 dark:bg-orange-900/20 hover:bg-orange-100/50 dark:hover:bg-orange-900/40 transition-colors shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="font-semibold text-orange-900 dark:text-orange-100">Check Expiries</div>
+              <div className="bg-orange-100 dark:bg-orange-800 p-2 rounded-full group-hover:scale-110 transition-transform">
+                <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/reports" className="group">
+          <Card className="h-full border border-purple-100 dark:border-purple-900 bg-purple-50/50 dark:bg-purple-900/20 hover:bg-purple-100/50 dark:hover:bg-purple-900/40 transition-colors shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="font-semibold text-purple-900 dark:text-purple-100">View Reports</div>
+              <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded-full group-hover:scale-110 transition-transform">
+                <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {user?.role !== 'staff' && (
           <Card className="border-l-4 border-l-teal-500 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
@@ -414,70 +459,6 @@ export default function DashboardPage() {
             {user?.role !== 'staff' && (
               <RevenueLineChart data={salesData} title="Sales Revenue (Last 7 Days)" />
             )}
-            
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card className="cursor-pointer hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors border-teal-100 dark:border-teal-900/50" onClick={() => router.push('/billing')}>
-                <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                  <div className="p-3 bg-teal-100 dark:bg-teal-900 rounded-full">
-                    <Receipt className="w-6 h-6 text-teal-600 dark:text-teal-400" />
-                  </div>
-                  <span className="font-medium text-sm text-center">New Bill</span>
-                </CardContent>
-              </Card>
-
-              {user?.role === 'staff' && (
-                <Card className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-blue-100 dark:border-blue-900/50" onClick={() => router.push('/products')}>
-                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                    <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                      <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <span className="font-medium text-sm text-center">Add Product</span>
-                  </CardContent>
-                </Card>
-              )}
-
-              {user?.role === 'staff' && (
-                <Card className="cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors border-yellow-100 dark:border-yellow-900/50" onClick={() => router.push('/expiry')}>
-                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                    <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
-                      <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <span className="font-medium text-sm text-center">Check Expiry</span>
-                  </CardContent>
-                </Card>
-              )}
-
-              <Card className="cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-purple-100 dark:border-purple-900/50" onClick={() => router.push('/stock')}>
-                <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                  <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-                    <PackagePlus className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <span className="font-medium text-sm text-center">Add Stock</span>
-                </CardContent>
-              </Card>
-
-              {user?.role !== 'staff' && (
-                <Card className="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors border-orange-100 dark:border-orange-900/50" onClick={() => router.push('/vendors')}>
-                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                    <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-                      <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <span className="font-medium text-sm text-center">Manage Vendors</span>
-                  </CardContent>
-                </Card>
-              )}
-
-              {user?.role !== 'staff' && (
-                <Card className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-blue-100 dark:border-blue-900/50" onClick={() => router.push('/reports')}>
-                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                    <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                      <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <span className="font-medium text-sm text-center">View Reports</span>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
           </div>
 
         <div className="space-y-6 flex flex-col min-w-0">
